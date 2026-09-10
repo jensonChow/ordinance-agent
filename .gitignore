@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env
+
+# keep the example env; ignore generated Prisma client
+!.env.example
+src/generated/
+
+# python
+.venv/
+__pycache__/
+*.pyc

@@ -1,0 +1,120 @@
+// Prisma 7 schema — PostgreSQL via the pg driver adapter (see src/lib/prisma.ts).
+// Connection URL for migrations lives in prisma.config.ts (DATABASE_URL).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// One chapter of the Basic Law (I–IX).
+model Chapter {
+  number   String    @id // roman numeral, e.g. "III"
+  ordinal  Int       @unique // 1..9 for ordering
+  title    String
+  sections Section[]
+  articles Article[]
+}
+
+/// A section inside a chapter (only Chapters IV and V have sections).
+model Section {
+  id            Int      @id @default(autoincrement())
+  chapterNumber String
+  number        Int
+  title         String
+  chapter       Chapter  @relation(fields: [chapterNumber], references: [number])
+  articles      Article[]
+
+  @@unique([chapterNumber, number])
+}
+
+/// One article of the Basic Law (1–160). `notes` holds the booklet's footnotes.
+model Article {
+  number        Int      @id
+  chapterNumber String
+  sectionId     Int?
+  text          String
+  notes         String[] @default([])
+  chapter       Chapter  @relation(fields: [chapterNumber], references: [number])
+  section       Section? @relation(fields: [sectionId], references: [id])
+  citations     Citation[]
+
+  @@index([chapterNumber])
+}
+
+/// Annexes I–III.
+model Annex {
+  id    String @id // "I", "II", "III"
+  title String
+  text  String
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  title     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+  notes     Note[]
+}
+
+enum Role {
+  user
+  assistant
+  system
+}
+
+/// A persisted UI message. `parts` stores the AI SDK UIMessage parts array verbatim (text, tool calls, results).
+model Message {
+  id             String       @id
+  conversationId String
+  role           Role
+  parts          Json
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  toolCalls      ToolCall[]
+  citations      Citation[]
+
+  @@index([conversationId, createdAt])
+}
+
+/// Every tool invocation the agent made, for tracing and evaluation.
+model ToolCall {
+  id         String   @id @default(cuid())
+  messageId  String
+  toolName   String
+  source     String   // "mcp" | "local"
+  input      Json
+  output     Json?
+  durationMs Int?
+  createdAt  DateTime @default(now())
+  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+}
+
+/// Which articles an assistant message relied on (derived from tool outputs).
+model Citation {
+  id            Int     @id @default(autoincrement())
+  messageId     String
+  articleNumber Int
+  message       Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  article       Article @relation(fields: [articleNumber], references: [number])
+
+  @@unique([messageId, articleNumber])
+}
+
+/// Study notes the user asks the agent to keep.
+model Note {
+  id             String       @id @default(cuid())
+  conversationId String?
+  articleNumber  Int?
+  body           String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
