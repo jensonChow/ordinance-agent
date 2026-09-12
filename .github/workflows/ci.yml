@@ -1,0 +1,46 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ordinance_agent
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/ordinance_agent
+      MODEL_PROVIDER: mock
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm run db:seed
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+      - run: npm run eval:retrieval
+      - name: build
+        run: npm run build
+      - name: end-to-end smoke test (mock model, real tool loop, real database)
+        run: |
+          npm run start -- -p 3100 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:3100/api/notes >/dev/null && break; sleep 1; done
+          node scripts/smoke-chat.mjs http://127.0.0.1:3100
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrieval-eval
+          path: eval/

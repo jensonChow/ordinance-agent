@@ -23,6 +23,19 @@ Python 3.9 venv for the Flask service. Package versions: next 16.3.4, ai 7.0.97,
 | Persistence | `psql` after the smoke run | `Message`: 2 user + 2 assistant rows (assistant ids `a_…`, parts arrays of 6 and 4); `ToolCall`: `search_articles` mcp, `get_article` mcp, `save_note` local, each linked to its assistant message; `Citation`: assistant message → article 24; `Note`: article 39, "revise Article 39 before the tutorial." |
 | Flask service | `gunicorn -w 1 -b 127.0.0.1:8765 app:app` in `services/citation-py` | `/healthz` → `{"ok":true}`; `POST /cite {"article":24,"paragraph":2}` → `Basic Law, art. 24(2)`; `style=long` → `Article 24 of the Basic Law of the Hong Kong Special Administrative Region of the People's Republic of China` |
 
+## 2026-09-12
+
+| Step | Command | Result |
+|---|---|---|
+| Schema | `prisma migrate dev --name question_bank` (+ GIN index on `Question.searchText`), `prisma migrate dev --name article_search_text` (+ GIN index on `Article.searchText`) | both applied; first attempt at indexing `array_to_string(tags)` failed with `functions in index expression must be marked IMMUTABLE`, replaced by a seeded `searchText` column |
+| Seed | `npm run db:seed` | `questions: 80` added to the counts; articles re-seeded with `searchText` |
+| MCP | `tools/list` on the dev server | 6 tools: `list_chapters`, `search_articles`, `find_questions`, `get_article`, `get_articles`, `get_annex` |
+| MCP | `tools/call find_questions {"query":"Can I be arrested without a reason?"}` | top hit qb-008 → Article 28 |
+| MCP | `tools/call search_articles {"query":"Do I pay customs duty on goods brought into Hong Kong?"}` | full-text search **misses**: loose hits 53, 79, 89 (the article says "tariff", not "customs duty") — `find_questions` on the same query returns qb-055 → Article 114, which is why the bank exists |
+| Retrieval eval | `npm run eval:retrieval` (160 paraphrases; dev/test split) | test set: strict FTS primary@5 23.8% → smart FTS 67.5% → question bank + smart FTS **80.0%** (any@5 85.0%); dev set tuned to 4 misses, test set 16 misses — see `eval/RESULTS.md` |
+| Typecheck / lint | `npx tsc --noEmit`, `npm run lint` | exit 0 |
+| Agent loop, keyless | `node scripts/smoke-chat.mjs http://127.0.0.1:3100` (mock model) | see the commit log; the mock still walks search_articles → get_article → answer |
+
 ## Not verified
 
 - **Azure OpenAI**: the provider path (`@ai-sdk/azure`, `createAzure({ resourceName, apiKey })`, deployment as model id)

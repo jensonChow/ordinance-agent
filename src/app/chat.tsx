@@ -3,14 +3,10 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, getToolName, isToolUIPart, type UIMessage } from "ai";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-
-const STARTERS = [
-  "Who qualifies as a permanent resident under Article 24?",
-  "What does the Basic Law say about freedom of speech and assembly?",
-  "How can the Basic Law be interpreted or amended? Cite the articles.",
-  "Save a note: revise Article 39 and the ICCPR point before Friday's tutorial.",
-];
+import { useEffect, useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { messageCitations, unwrapToolOutput } from "@/lib/citations";
 
 type ToolPart = {
   type: string;
@@ -21,29 +17,21 @@ type ToolPart = {
   errorText?: string;
 };
 
+type ArticleView = { number: number; citation: string; chapter: string; section: string | null; text: string; notes: string[] };
+
 function pretty(value: unknown): string {
-  // MCP tool results arrive as { content: [{ type: "text", text: "<json>" }] } — unwrap for display.
-  const v = value as { content?: { type: string; text?: string }[] } | undefined;
-  const textBlock = v?.content?.find((c) => c.type === "text")?.text;
-  if (textBlock) {
-    try {
-      return JSON.stringify(JSON.parse(textBlock), null, 2);
-    } catch {
-      return textBlock;
-    }
-  }
+  const v = unwrapToolOutput(value);
   try {
-    return JSON.stringify(value, null, 2);
+    return typeof v === "string" ? v : JSON.stringify(v, null, 2);
   } catch {
-    return String(value);
+    return String(v);
   }
 }
 
 function ToolCard({ part }: { part: ToolPart }) {
   const name = getToolName(part as never);
   const isMcp = part.type === "dynamic-tool";
-  const label =
-    part.state === "output-available" ? "done" : part.state === "output-error" ? "error" : "running";
+  const label = part.state === "output-available" ? "done" : part.state === "output-error" ? "error" : "running";
   return (
     <details className="my-2 rounded-md border border-neutral-200 bg-neutral-50 text-xs dark:border-neutral-800 dark:bg-neutral-900">
       <summary className="cursor-pointer select-none px-3 py-2 font-mono">
@@ -68,9 +56,28 @@ function ToolCard({ part }: { part: ToolPart }) {
   );
 }
 
-function MessageView({ message }: { message: UIMessage }) {
+function Chip({ n, kind, onOpen }: { n: number; kind: "read" | "mentioned"; onOpen: (n: number) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(n)}
+      title={kind === "read" ? "The agent read this article's full text" : "Named in the answer"}
+      className={`rounded-full border px-2 py-0.5 font-mono text-[11px] hover:bg-neutral-200 dark:hover:bg-neutral-800 ${
+        kind === "read"
+          ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+          : "border-neutral-300 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-black dark:text-neutral-300"
+      }`}
+    >
+      Art. {n}
+    </button>
+  );
+}
+
+function MessageView({ message, onOpen }: { message: UIMessage; onOpen: (n: number) => void }) {
   const isUser = message.role === "user";
   const meta = message.metadata as { provider?: string; model?: string } | undefined;
+  const cites = isUser ? null : messageCitations(message);
+  const chips = cites ? [...cites.read.map((n) => ({ n, kind: "read" as const })), ...cites.mentioned.filter((n) => !cites.read.includes(n)).map((n) => ({ n, kind: "mentioned" as const }))] : [];
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -80,10 +87,14 @@ function MessageView({ message }: { message: UIMessage }) {
       >
         {message.parts.map((part, i) => {
           if (part.type === "text") {
-            return (
+            return isUser ? (
               <p key={i} className="whitespace-pre-wrap">
                 {part.text}
               </p>
+            ) : (
+              <div key={i} className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-li:my-0">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{part.text}</ReactMarkdown>
+              </div>
             );
           }
           if (isToolUIPart(part)) {
@@ -91,9 +102,19 @@ function MessageView({ message }: { message: UIMessage }) {
           }
           return null;
         })}
-        {!isUser && meta?.model ? (
-          <div className="mt-2 text-[10px] uppercase tracking-wide text-neutral-400">
-            {meta.provider} · {meta.model}
+        {cites && (chips.length > 0 || cites.toolCalls > 0) ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-neutral-200 pt-2 text-[11px] text-neutral-500 dark:border-neutral-800">
+            {chips.length > 0 ? <span className="mr-1">Sources</span> : null}
+            {chips.map((c) => (
+              <Chip key={`${c.kind}-${c.n}`} n={c.n} kind={c.kind} onOpen={onOpen} />
+            ))}
+            {cites.toolCalls > 0 ? (
+              <span className="ml-auto">
+                {cites.toolCalls} tool call{cites.toolCalls === 1 ? "" : "s"}
+                {cites.mcpCalls ? ` · ${cites.mcpCalls} via MCP` : ""}
+                {meta?.model ? ` · ${meta.provider} / ${meta.model}` : ""}
+              </span>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -101,9 +122,52 @@ function MessageView({ message }: { message: UIMessage }) {
   );
 }
 
-export function Chat({ conversationId, initialMessages }: { conversationId: string; initialMessages: UIMessage[] }) {
+function ArticlePanel({ article, onClose, onOpen }: { article: ArticleView; onClose: () => void; onOpen: (n: number) => void }) {
+  return (
+    <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/60 p-4 text-sm dark:border-emerald-900 dark:bg-emerald-950/40">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="font-mono text-xs text-emerald-800 dark:text-emerald-200">{article.citation}</span>
+        <span className="text-xs text-neutral-500">
+          Chapter {article.chapter}
+          {article.section ? ` · ${article.section}` : ""}
+        </span>
+        <span className="ml-auto flex gap-1">
+          <button type="button" onClick={() => article.number > 1 && onOpen(article.number - 1)} className="rounded border px-2 text-xs" aria-label="previous article">
+            ‹
+          </button>
+          <button type="button" onClick={() => article.number < 160 && onOpen(article.number + 1)} className="rounded border px-2 text-xs" aria-label="next article">
+            ›
+          </button>
+          <button type="button" onClick={onClose} className="rounded border px-2 text-xs" aria-label="close">
+            ×
+          </button>
+        </span>
+      </div>
+      <p className="whitespace-pre-wrap leading-relaxed">{article.text}</p>
+      {article.notes.length ? (
+        <ul className="mt-2 space-y-1 text-xs text-neutral-600 dark:text-neutral-400">
+          {article.notes.map((n, i) => (
+            <li key={i}>{n}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+export function Chat({
+  conversationId,
+  initialMessages,
+  starters,
+}: {
+  conversationId: string;
+  initialMessages: UIMessage[];
+  starters: string[];
+}) {
   const router = useRouter();
   const [input, setInput] = useState("");
+  const [openArticle, setOpenArticle] = useState<number | null>(null);
+  const [article, setArticle] = useState<ArticleView | null>(null);
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/chat", body: { conversationId } }),
     [conversationId],
@@ -112,9 +176,25 @@ export function Chat({ conversationId, initialMessages }: { conversationId: stri
     id: conversationId,
     transport,
     messages: initialMessages,
-    onFinish: () => router.refresh(), // refresh server-rendered notes / counters
+    onFinish: () => router.refresh(), // refresh server-rendered notes / counters / conversation list
   });
   const busy = status === "submitted" || status === "streaming";
+
+  useEffect(() => {
+    if (openArticle == null) return;
+    let cancelled = false;
+    fetch(`/api/articles/${openArticle}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((a: ArticleView | null) => {
+        if (!cancelled) setArticle(a);
+      })
+      .catch(() => {
+        if (!cancelled) setArticle(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [openArticle]);
 
   const submit = (text: string) => {
     const t = text.trim();
@@ -127,27 +207,41 @@ export function Chat({ conversationId, initialMessages }: { conversationId: stri
     <div className="flex flex-1 flex-col">
       <div className="flex-1 space-y-3 overflow-y-auto rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
         {messages.length === 0 ? (
-          <div className="grid gap-2 sm:grid-cols-2">
-            {STARTERS.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => submit(s)}
-                className="rounded-lg border border-neutral-200 p-3 text-left text-sm hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
-              >
-                {s}
-              </button>
-            ))}
+          <div>
+            <p className="mb-2 text-xs uppercase tracking-wide text-neutral-400">Try a question from the study bank</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {starters.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => submit(s)}
+                  className="rounded-lg border border-neutral-200 p-3 text-left text-sm hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
-          messages.map((m) => <MessageView key={m.id} message={m} />)
+          messages.map((m) => <MessageView key={m.id} message={m} onOpen={setOpenArticle} />)
         )}
+        {busy ? <div className="text-xs text-neutral-400">Thinking with tools…</div> : null}
         {error ? (
           <div className="rounded-md border border-red-300 bg-red-50 p-3 text-xs text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
             {error.message}
           </div>
         ) : null}
       </div>
+      {article && openArticle != null ? (
+        <ArticlePanel
+          article={article}
+          onClose={() => {
+            setOpenArticle(null);
+            setArticle(null);
+          }}
+          onOpen={setOpenArticle}
+        />
+      ) : null}
       <form
         className="mt-3 flex gap-2"
         onSubmit={(e) => {
@@ -158,7 +252,7 @@ export function Chat({ conversationId, initialMessages }: { conversationId: stri
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about the Basic Law…"
+          placeholder="Ask about the Basic Law in your own words…"
           className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-neutral-500 dark:border-neutral-700 dark:bg-black"
         />
         {busy ? (
