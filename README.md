@@ -47,6 +47,8 @@ Every assistant turn is persisted with its **UI message parts**, the **tool call
 
 Prerequisites: Node 22+, PostgreSQL (any 14+; Homebrew, Docker or a hosted database), and `pdftotext` (poppler) only
 if you want to rebuild the corpus.
+On a Mac with Homebrew's `postgresql@17`, `scripts/local-postgres.sh init` creates a throwaway cluster inside the repo
+(`.local/pgdata`, gitignored) on port 5433; `start` / `stop` / `status` / `psql` manage it.
 
 ```bash
 npm install                              # also runs `prisma generate`

@@ -49,3 +49,6 @@ src/generated/
 .venv/
 __pycache__/
 *.pyc
+
+# local dev database cluster (scripts/local-postgres.sh)
+.local/
