@@ -17,6 +17,15 @@ type Corpus = {
   annexes: { annex: string; title: string; text: string }[];
 };
 
+/** Phrases repeated in almost every article; removed from the loose-search text so they stop dominating ranking. */
+const BOILERPLATE = [
+  /of the Hong Kong Special Administrative Region/gi,
+  /Hong Kong Special Administrative Region/gi,
+  /of the People[’']s Republic of China/gi,
+  /People[’']s Republic of China/gi,
+];
+const searchText = (text: string) => BOILERPLATE.reduce((t, re) => t.replace(re, " "), text).replace(/\s+/g, " ").trim();
+
 const ROMAN: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9 };
 
 async function main() {
@@ -51,9 +60,10 @@ async function main() {
         chapterNumber: a.chapter,
         sectionId: sectionId(a.chapter, a.section),
         text: a.text,
+        searchText: searchText(a.text),
         notes: a.notes ?? [],
       },
-      update: { chapterNumber: a.chapter, sectionId: sectionId(a.chapter, a.section), text: a.text, notes: a.notes ?? [] },
+      update: { chapterNumber: a.chapter, sectionId: sectionId(a.chapter, a.section), text: a.text, searchText: searchText(a.text), notes: a.notes ?? [] },
     });
   }
 
@@ -65,7 +75,19 @@ async function main() {
     });
   }
 
+  const bank: { questions: { id: string; question: string; variants: string[]; articles: number[]; tags: string[] }[] } = JSON.parse(
+    readFileSync(resolve(__dirname, "../data/question-bank.json"), "utf8"),
+  );
+  for (const q of bank.questions) {
+    await prisma.question.upsert({
+      where: { id: q.id },
+      create: { id: q.id, text: q.question, variants: q.variants, articles: q.articles, tags: q.tags, searchText: `${q.question} ${q.tags.join(" ")}` },
+      update: { text: q.question, variants: q.variants, articles: q.articles, tags: q.tags, searchText: `${q.question} ${q.tags.join(" ")}` },
+    });
+  }
+
   const counts = {
+    questions: await prisma.question.count(),
     chapters: await prisma.chapter.count(),
     sections: await prisma.section.count(),
     articles: await prisma.article.count(),

@@ -1,0 +1,1391 @@
+{
+  "source": "Hand-written study question bank for the Basic Law of the HKSAR. Each entry maps a lay-language question (plus paraphrases used only for evaluation) to the article(s) that answer it. Not legal advice.",
+  "questions": [
+    {
+      "id": "qb-001",
+      "question": "Who counts as a permanent resident of Hong Kong?",
+      "variants": [
+        "Do I become a permanent resident after living in Hong Kong for seven years?",
+        "What is the difference between permanent and non-permanent residents?"
+      ],
+      "articles": [
+        24
+      ],
+      "tags": [
+        "residency",
+        "right of abode",
+        "seven years"
+      ]
+    },
+    {
+      "id": "qb-002",
+      "question": "Is my child born outside Hong Kong a permanent resident?",
+      "variants": [
+        "My baby was born overseas. Does the child get Hong Kong right of abode?",
+        "Are children of permanent residents born abroad entitled to permanent residency?"
+      ],
+      "articles": [
+        24
+      ],
+      "tags": [
+        "residency",
+        "children",
+        "born abroad",
+        "NPCSC interpretation"
+      ]
+    },
+    {
+      "id": "qb-003",
+      "question": "Can a non-Chinese national become a Hong Kong permanent resident?",
+      "variants": [
+        "I am a foreigner who has lived in Hong Kong for seven years. Can I get permanent residency?",
+        "Do expatriates qualify for right of abode?"
+      ],
+      "articles": [
+        24
+      ],
+      "tags": [
+        "residency",
+        "foreign nationals"
+      ]
+    },
+    {
+      "id": "qb-004",
+      "question": "Are all Hong Kong residents equal before the law?",
+      "variants": [
+        "Does the Basic Law promise equal treatment under the law?",
+        "Is discrimination in the application of law prohibited?"
+      ],
+      "articles": [
+        25
+      ],
+      "tags": [
+        "equality"
+      ]
+    },
+    {
+      "id": "qb-005",
+      "question": "Who has the right to vote and to stand for election?",
+      "variants": [
+        "Can non-permanent residents vote in Hong Kong elections?",
+        "Am I allowed to run for office?"
+      ],
+      "articles": [
+        26
+      ],
+      "tags": [
+        "elections",
+        "vote"
+      ]
+    },
+    {
+      "id": "qb-006",
+      "question": "Is freedom of speech protected in Hong Kong?",
+      "variants": [
+        "Can I publish an article criticising the government?",
+        "Is press freedom guaranteed?"
+      ],
+      "articles": [
+        27
+      ],
+      "tags": [
+        "speech",
+        "press",
+        "publication",
+        "criticise",
+        "publish",
+        "newspaper",
+        "media",
+        "censorship"
+      ]
+    },
+    {
+      "id": "qb-007",
+      "question": "Can I join a protest or demonstration?",
+      "variants": [
+        "Are marches and public assemblies allowed?",
+        "Do I have the right to form or join a trade union and to strike?"
+      ],
+      "articles": [
+        27
+      ],
+      "tags": [
+        "assembly",
+        "procession",
+        "trade union",
+        "strike"
+      ]
+    },
+    {
+      "id": "qb-008",
+      "question": "Can the police arrest or detain me without a lawful reason?",
+      "variants": [
+        "What protects me from arbitrary detention?",
+        "Is torture or inhuman treatment banned?"
+      ],
+      "articles": [
+        28
+      ],
+      "tags": [
+        "arrest",
+        "detention",
+        "torture"
+      ]
+    },
+    {
+      "id": "qb-009",
+      "question": "Can the police search my home without lawful authority?",
+      "variants": [
+        "Is my flat protected from unlawful entry and search?",
+        "Are homes and premises inviolable?"
+      ],
+      "articles": [
+        29
+      ],
+      "tags": [
+        "home",
+        "search",
+        "premises"
+      ]
+    },
+    {
+      "id": "qb-010",
+      "question": "Is the privacy of my letters, calls and messages protected?",
+      "variants": [
+        "Can the government read my private communications?",
+        "When may authorities inspect communications?"
+      ],
+      "articles": [
+        30
+      ],
+      "tags": [
+        "privacy",
+        "communication"
+      ]
+    },
+    {
+      "id": "qb-011",
+      "question": "Am I free to travel abroad or emigrate from Hong Kong?",
+      "variants": [
+        "Do I need special permission to leave Hong Kong?",
+        "Can residents move to another country freely?"
+      ],
+      "articles": [
+        31
+      ],
+      "tags": [
+        "travel",
+        "movement",
+        "emigration",
+        "leave",
+        "exit",
+        "permission",
+        "travel abroad",
+        "go overseas"
+      ]
+    },
+    {
+      "id": "qb-012",
+      "question": "Is freedom of religion guaranteed?",
+      "variants": [
+        "Can I preach and hold religious activities in public?",
+        "Is freedom of conscience protected?"
+      ],
+      "articles": [
+        32,
+        141
+      ],
+      "tags": [
+        "religion",
+        "conscience",
+        "preach",
+        "worship",
+        "religious activities",
+        "church",
+        "temple"
+      ]
+    },
+    {
+      "id": "qb-013",
+      "question": "Can I choose any occupation I want?",
+      "variants": [
+        "Does the Basic Law protect my choice of job?",
+        "Is there freedom of occupation?"
+      ],
+      "articles": [
+        33
+      ],
+      "tags": [
+        "occupation",
+        "work",
+        "job",
+        "career",
+        "profession",
+        "choose work"
+      ]
+    },
+    {
+      "id": "qb-014",
+      "question": "Am I free to do academic research and create art or literature?",
+      "variants": [
+        "Is cultural and literary creation protected?",
+        "Do residents have freedom of academic research?"
+      ],
+      "articles": [
+        34
+      ],
+      "tags": [
+        "academic",
+        "culture",
+        "art"
+      ]
+    },
+    {
+      "id": "qb-015",
+      "question": "Do I have the right to see a lawyer and go to court?",
+      "variants": [
+        "Is legal advice confidential in Hong Kong?",
+        "Can I sue the government or its officials?"
+      ],
+      "articles": [
+        35
+      ],
+      "tags": [
+        "lawyer",
+        "courts",
+        "legal advice",
+        "judicial remedies"
+      ]
+    },
+    {
+      "id": "qb-016",
+      "question": "Do I have a right to social welfare and retirement protection?",
+      "variants": [
+        "Are welfare benefits guaranteed by the Basic Law?",
+        "Is retirement security for workers protected?"
+      ],
+      "articles": [
+        36,
+        145
+      ],
+      "tags": [
+        "welfare",
+        "retirement",
+        "labour",
+        "benefits",
+        "pension",
+        "guaranteed",
+        "social security"
+      ]
+    },
+    {
+      "id": "qb-017",
+      "question": "Is the right to marry and raise a family protected?",
+      "variants": [
+        "Does the Basic Law protect freedom of marriage?",
+        "Can I raise a family freely?"
+      ],
+      "articles": [
+        37
+      ],
+      "tags": [
+        "marriage",
+        "family"
+      ]
+    },
+    {
+      "id": "qb-018",
+      "question": "Do international human rights treaties apply in Hong Kong?",
+      "variants": [
+        "Does the ICCPR still apply after 1997?",
+        "Can the government restrict my rights, and what are the limits?"
+      ],
+      "articles": [
+        39
+      ],
+      "tags": [
+        "ICCPR",
+        "ICESCR",
+        "human rights",
+        "restrictions"
+      ]
+    },
+    {
+      "id": "qb-019",
+      "question": "Are the traditional rights of New Territories indigenous villagers protected?",
+      "variants": [
+        "What does the Basic Law say about indigenous inhabitants?",
+        "Are lawful traditional interests of the New Territories preserved?"
+      ],
+      "articles": [
+        40,
+        122
+      ],
+      "tags": [
+        "New Territories",
+        "indigenous",
+        "small house"
+      ]
+    },
+    {
+      "id": "qb-020",
+      "question": "Do visitors and non-residents enjoy the same rights as Hong Kong residents?",
+      "variants": [
+        "I am not a Hong Kong resident. Do these freedoms apply to me?",
+        "Are tourists protected by Chapter III?"
+      ],
+      "articles": [
+        41
+      ],
+      "tags": [
+        "non-residents",
+        "visitors"
+      ]
+    },
+    {
+      "id": "qb-021",
+      "question": "Do I have to obey Hong Kong law even if I am not a resident?",
+      "variants": [
+        "Are foreigners bound by Hong Kong laws?",
+        "What duties do residents have?"
+      ],
+      "articles": [
+        42
+      ],
+      "tags": [
+        "duties",
+        "obey law"
+      ]
+    },
+    {
+      "id": "qb-022",
+      "question": "Who is eligible to be Chief Executive?",
+      "variants": [
+        "How old must the Chief Executive be?",
+        "Can someone with a foreign right of abode become Chief Executive?"
+      ],
+      "articles": [
+        44
+      ],
+      "tags": [
+        "Chief Executive",
+        "qualifications"
+      ]
+    },
+    {
+      "id": "qb-023",
+      "question": "How is the Chief Executive selected?",
+      "variants": [
+        "Is the Chief Executive elected by universal suffrage?",
+        "Who appoints the Chief Executive after the election?"
+      ],
+      "articles": [
+        45
+      ],
+      "tags": [
+        "Chief Executive",
+        "election",
+        "universal suffrage",
+        "Annex I"
+      ]
+    },
+    {
+      "id": "qb-024",
+      "question": "How long does the Chief Executive serve and can they be re-elected?",
+      "variants": [
+        "What is the term of office of the Chief Executive?",
+        "How many terms can a Chief Executive serve?"
+      ],
+      "articles": [
+        46
+      ],
+      "tags": [
+        "Chief Executive",
+        "term"
+      ]
+    },
+    {
+      "id": "qb-025",
+      "question": "Must the Chief Executive declare their assets?",
+      "variants": [
+        "Does the Chief Executive have to disclose personal wealth?",
+        "Who receives the Chief Executive's asset declaration?"
+      ],
+      "articles": [
+        47
+      ],
+      "tags": [
+        "Chief Executive",
+        "assets",
+        "integrity",
+        "wealth",
+        "disclose",
+        "declaration",
+        "Chief Justice"
+      ]
+    },
+    {
+      "id": "qb-026",
+      "question": "Can the Chief Executive dissolve the Legislative Council?",
+      "variants": [
+        "What happens when LegCo and the Chief Executive deadlock over a bill?",
+        "When can the legislature be dissolved?"
+      ],
+      "articles": [
+        50,
+        49
+      ],
+      "tags": [
+        "Chief Executive",
+        "Legislative Council",
+        "dissolution"
+      ]
+    },
+    {
+      "id": "qb-027",
+      "question": "What happens if the Legislative Council refuses to pass the budget?",
+      "variants": [
+        "Can the government spend money without an approved budget?",
+        "How is a budget deadlock handled?"
+      ],
+      "articles": [
+        51
+      ],
+      "tags": [
+        "budget",
+        "Legislative Council"
+      ]
+    },
+    {
+      "id": "qb-028",
+      "question": "When must the Chief Executive resign?",
+      "variants": [
+        "Under what circumstances does the Chief Executive have to step down?",
+        "Can LegCo force the Chief Executive out?"
+      ],
+      "articles": [
+        52
+      ],
+      "tags": [
+        "Chief Executive",
+        "resignation",
+        "step down",
+        "resign",
+        "impeachment",
+        "removed from office"
+      ]
+    },
+    {
+      "id": "qb-029",
+      "question": "Who acts as Chief Executive if the office is vacant or the holder is unavailable?",
+      "variants": [
+        "Who takes over when the Chief Executive is temporarily unable to work?",
+        "How quickly must a new Chief Executive be selected after a vacancy?"
+      ],
+      "articles": [
+        53
+      ],
+      "tags": [
+        "Chief Executive",
+        "acting",
+        "vacancy",
+        "acting Chief Executive",
+        "unable to perform duties",
+        "take over",
+        "temporarily"
+      ]
+    },
+    {
+      "id": "qb-030",
+      "question": "What is the Executive Council and who sits on it?",
+      "variants": [
+        "Who appoints members of ExCo?",
+        "Does the Chief Executive have to follow ExCo's advice?"
+      ],
+      "articles": [
+        54,
+        55,
+        56
+      ],
+      "tags": [
+        "Executive Council",
+        "ExCo"
+      ]
+    },
+    {
+      "id": "qb-031",
+      "question": "Is the anti-corruption commission independent?",
+      "variants": [
+        "Who does the ICAC report to?",
+        "Does the Basic Law set up a corruption watchdog?"
+      ],
+      "articles": [
+        57
+      ],
+      "tags": [
+        "ICAC",
+        "corruption"
+      ]
+    },
+    {
+      "id": "qb-032",
+      "question": "Who controls criminal prosecutions in Hong Kong?",
+      "variants": [
+        "Can the government interfere with a prosecution decision?",
+        "Which department decides whether to prosecute?"
+      ],
+      "articles": [
+        63
+      ],
+      "tags": [
+        "prosecution",
+        "Department of Justice"
+      ]
+    },
+    {
+      "id": "qb-033",
+      "question": "Is the government accountable to the Legislative Council?",
+      "variants": [
+        "Does LegCo approve taxes and public spending?",
+        "Must officials answer questions from legislators?"
+      ],
+      "articles": [
+        64,
+        73
+      ],
+      "tags": [
+        "accountability",
+        "Legislative Council",
+        "taxation",
+        "approve taxes",
+        "public expenditure",
+        "spending",
+        "answer questions",
+        "report"
+      ]
+    },
+    {
+      "id": "qb-034",
+      "question": "Can foreign nationals be members of the Legislative Council?",
+      "variants": [
+        "Who is eligible to sit in LegCo?",
+        "Is there a limit on legislators with foreign right of abode?"
+      ],
+      "articles": [
+        67
+      ],
+      "tags": [
+        "Legislative Council",
+        "membership",
+        "foreign nationals",
+        "eligible",
+        "sit in LegCo",
+        "legislator",
+        "qualification",
+        "20 per cent"
+      ]
+    },
+    {
+      "id": "qb-035",
+      "question": "Will all Legislative Council members eventually be elected by universal suffrage?",
+      "variants": [
+        "How is LegCo formed?",
+        "What does the Basic Law say about the ultimate aim for LegCo elections?"
+      ],
+      "articles": [
+        68
+      ],
+      "tags": [
+        "Legislative Council",
+        "universal suffrage",
+        "Annex II"
+      ]
+    },
+    {
+      "id": "qb-036",
+      "question": "How long is a Legislative Council term?",
+      "variants": [
+        "How many years do legislators serve?",
+        "What was the length of the first LegCo term?"
+      ],
+      "articles": [
+        69
+      ],
+      "tags": [
+        "Legislative Council",
+        "term",
+        "legislators",
+        "years",
+        "serve",
+        "four years"
+      ]
+    },
+    {
+      "id": "qb-037",
+      "question": "Can a legislator be sued for what they say in the Council?",
+      "variants": [
+        "Do LegCo members have immunity for their statements?",
+        "Can a legislator be arrested on the way to a Council meeting?"
+      ],
+      "articles": [
+        77,
+        78
+      ],
+      "tags": [
+        "Legislative Council",
+        "immunity",
+        "arrest"
+      ]
+    },
+    {
+      "id": "qb-038",
+      "question": "How can a Legislative Council member lose their seat?",
+      "variants": [
+        "When is a legislator disqualified?",
+        "Can LegCo expel a member for misbehaviour?"
+      ],
+      "articles": [
+        79
+      ],
+      "tags": [
+        "Legislative Council",
+        "disqualification",
+        "legislator",
+        "disqualified",
+        "lose seat",
+        "expel",
+        "censure",
+        "bankrupt"
+      ]
+    },
+    {
+      "id": "qb-039",
+      "question": "Which is the highest court in Hong Kong?",
+      "variants": [
+        "Which court has the power of final adjudication?",
+        "Can judges from other common law countries sit on the Court of Final Appeal?"
+      ],
+      "articles": [
+        82,
+        81
+      ],
+      "tags": [
+        "courts",
+        "Court of Final Appeal"
+      ]
+    },
+    {
+      "id": "qb-040",
+      "question": "Are Hong Kong judges independent?",
+      "variants": [
+        "Can a judge be sued for a judgment?",
+        "Is the judiciary free from interference?"
+      ],
+      "articles": [
+        85
+      ],
+      "tags": [
+        "judiciary",
+        "independence",
+        "immunity",
+        "sued",
+        "judgment",
+        "immune",
+        "judges",
+        "liability"
+      ]
+    },
+    {
+      "id": "qb-041",
+      "question": "Is there still trial by jury in Hong Kong?",
+      "variants": [
+        "Does the Basic Law keep the jury system?",
+        "Are jury trials guaranteed?"
+      ],
+      "articles": [
+        86
+      ],
+      "tags": [
+        "jury"
+      ]
+    },
+    {
+      "id": "qb-042",
+      "question": "Am I presumed innocent until proven guilty?",
+      "variants": [
+        "Do I have the right to a fair trial without delay?",
+        "Are the old procedural rights in criminal cases kept?"
+      ],
+      "articles": [
+        87
+      ],
+      "tags": [
+        "presumption of innocence",
+        "fair trial"
+      ]
+    },
+    {
+      "id": "qb-043",
+      "question": "How are judges appointed and removed?",
+      "variants": [
+        "Who recommends judicial appointments?",
+        "Can a judge be dismissed, and by whom?"
+      ],
+      "articles": [
+        88,
+        89
+      ],
+      "tags": [
+        "judges",
+        "appointment",
+        "removal"
+      ]
+    },
+    {
+      "id": "qb-044",
+      "question": "Can foreign judges serve in Hong Kong courts?",
+      "variants": [
+        "May judges be recruited from other common law jurisdictions?",
+        "Must the Chief Justice be a Chinese citizen?"
+      ],
+      "articles": [
+        92,
+        90
+      ],
+      "tags": [
+        "judges",
+        "common law",
+        "Chief Justice"
+      ]
+    },
+    {
+      "id": "qb-045",
+      "question": "Can foreign lawyers practise in Hong Kong?",
+      "variants": [
+        "What does the Basic Law say about overseas lawyers?",
+        "Can the government regulate lawyers from outside Hong Kong?"
+      ],
+      "articles": [
+        94
+      ],
+      "tags": [
+        "lawyers",
+        "foreign lawyers"
+      ]
+    },
+    {
+      "id": "qb-046",
+      "question": "Must civil servants be permanent residents?",
+      "variants": [
+        "Can a foreigner work in the Hong Kong government?",
+        "Are British nationals allowed to remain in the civil service?"
+      ],
+      "articles": [
+        99,
+        101
+      ],
+      "tags": [
+        "civil service",
+        "public servants",
+        "foreign nationals",
+        "foreigner",
+        "work for the government",
+        "civil servant",
+        "government job"
+      ]
+    },
+    {
+      "id": "qb-047",
+      "question": "Are civil service pensions protected after 1997?",
+      "variants": [
+        "Will retired government staff still receive their pensions?",
+        "Are pension benefits for public servants guaranteed?"
+      ],
+      "articles": [
+        102
+      ],
+      "tags": [
+        "civil service",
+        "pension"
+      ]
+    },
+    {
+      "id": "qb-048",
+      "question": "Do officials and legislators have to take an oath?",
+      "variants": [
+        "What must the Chief Executive and judges swear when taking office?",
+        "Which office-holders must swear to uphold the Basic Law?"
+      ],
+      "articles": [
+        104
+      ],
+      "tags": [
+        "oath",
+        "allegiance",
+        "NPCSC interpretation",
+        "swear",
+        "oath of office",
+        "judges",
+        "taking office",
+        "uphold"
+      ]
+    },
+    {
+      "id": "qb-049",
+      "question": "Can the government take my property, and will I be compensated?",
+      "variants": [
+        "Is private property protected in Hong Kong?",
+        "How is compensation for expropriation calculated?"
+      ],
+      "articles": [
+        105,
+        6
+      ],
+      "tags": [
+        "property",
+        "compensation",
+        "private property",
+        "expropriation",
+        "ownership",
+        "inheritance",
+        "investment"
+      ]
+    },
+    {
+      "id": "qb-050",
+      "question": "Does Hong Kong hand over its tax revenue to the Central Government?",
+      "variants": [
+        "Are Hong Kong's finances separate from the mainland's?",
+        "Does Beijing levy taxes in Hong Kong?"
+      ],
+      "articles": [
+        106
+      ],
+      "tags": [
+        "public finance",
+        "revenue",
+        "finances",
+        "separate",
+        "mainland",
+        "independent finances",
+        "financial revenues"
+      ]
+    },
+    {
+      "id": "qb-051",
+      "question": "Must the Hong Kong government balance its budget?",
+      "variants": [
+        "Can the government run a deficit?",
+        "What fiscal principles does the Basic Law set?"
+      ],
+      "articles": [
+        107
+      ],
+      "tags": [
+        "budget",
+        "fiscal balance"
+      ]
+    },
+    {
+      "id": "qb-052",
+      "question": "Does Hong Kong set its own taxes?",
+      "variants": [
+        "Is the low tax policy protected?",
+        "Who decides tax rates in Hong Kong?"
+      ],
+      "articles": [
+        108
+      ],
+      "tags": [
+        "tax",
+        "low tax"
+      ]
+    },
+    {
+      "id": "qb-053",
+      "question": "Who issues Hong Kong dollars and what backs them?",
+      "variants": [
+        "Is the Hong Kong dollar still legal tender?",
+        "Must the currency be backed by a reserve fund?"
+      ],
+      "articles": [
+        111
+      ],
+      "tags": [
+        "currency",
+        "Hong Kong dollar",
+        "banknotes"
+      ]
+    },
+    {
+      "id": "qb-054",
+      "question": "Are there controls on moving money in and out of Hong Kong?",
+      "variants": [
+        "Is the Hong Kong dollar freely convertible?",
+        "Does Hong Kong have foreign exchange controls?"
+      ],
+      "articles": [
+        112
+      ],
+      "tags": [
+        "capital flow",
+        "foreign exchange",
+        "convertible"
+      ]
+    },
+    {
+      "id": "qb-055",
+      "question": "Is Hong Kong a free port with no import tariffs?",
+      "variants": [
+        "Do I pay customs duty on goods brought into Hong Kong?",
+        "Does the Basic Law guarantee free trade?"
+      ],
+      "articles": [
+        114,
+        115
+      ],
+      "tags": [
+        "free port",
+        "tariff",
+        "free trade",
+        "customs duty",
+        "import duty",
+        "goods",
+        "tariff-free",
+        "duty"
+      ]
+    },
+    {
+      "id": "qb-056",
+      "question": "Can Hong Kong join trade bodies like the WTO on its own?",
+      "variants": [
+        "Is Hong Kong a separate customs territory?",
+        "Under what name does Hong Kong take part in international trade agreements?"
+      ],
+      "articles": [
+        116,
+        151
+      ],
+      "tags": [
+        "customs territory",
+        "WTO",
+        "Hong Kong, China"
+      ]
+    },
+    {
+      "id": "qb-057",
+      "question": "What happened to land leases that would have expired in 1997?",
+      "variants": [
+        "Was my land lease extended to 2047?",
+        "Are leases granted before 1997 still valid?"
+      ],
+      "articles": [
+        121,
+        120,
+        123
+      ],
+      "tags": [
+        "land lease",
+        "2047"
+      ]
+    },
+    {
+      "id": "qb-058",
+      "question": "Does Hong Kong keep its own shipping register?",
+      "variants": [
+        "Can ships be registered in Hong Kong after 1997?",
+        "Can foreign warships enter Hong Kong ports freely?"
+      ],
+      "articles": [
+        125,
+        126
+      ],
+      "tags": [
+        "shipping",
+        "ports"
+      ]
+    },
+    {
+      "id": "qb-059",
+      "question": "Does Hong Kong manage its own civil aviation and negotiate air routes?",
+      "variants": [
+        "Can Hong Kong sign air service agreements with other countries?",
+        "Who keeps the aircraft register in Hong Kong?"
+      ],
+      "articles": [
+        129,
+        133,
+        134
+      ],
+      "tags": [
+        "civil aviation",
+        "air services"
+      ]
+    },
+    {
+      "id": "qb-060",
+      "question": "Who decides education policy in Hong Kong?",
+      "variants": [
+        "Can universities keep their autonomy and academic freedom?",
+        "Can schools use teaching materials from outside Hong Kong?"
+      ],
+      "articles": [
+        136,
+        137
+      ],
+      "tags": [
+        "education",
+        "academic freedom",
+        "universities"
+      ]
+    },
+    {
+      "id": "qb-061",
+      "question": "Is traditional Chinese medicine recognised in Hong Kong's health policy?",
+      "variants": [
+        "Who sets medical and health policy?",
+        "Does the Basic Law mention Chinese medicine?"
+      ],
+      "articles": [
+        138
+      ],
+      "tags": [
+        "health",
+        "Chinese medicine"
+      ]
+    },
+    {
+      "id": "qb-062",
+      "question": "Does Hong Kong make its own labour laws?",
+      "variants": [
+        "Who sets employment laws in Hong Kong?",
+        "Are labour policies decided locally?"
+      ],
+      "articles": [
+        147
+      ],
+      "tags": [
+        "labour",
+        "employment",
+        "employment laws",
+        "workers",
+        "labour policy"
+      ]
+    },
+    {
+      "id": "qb-063",
+      "question": "Do treaties signed by China automatically apply to Hong Kong?",
+      "variants": [
+        "How is it decided whether an international agreement applies to Hong Kong?",
+        "Can Hong Kong stay in international organisations China is not a member of?"
+      ],
+      "articles": [
+        153,
+        152
+      ],
+      "tags": [
+        "treaties",
+        "international agreements",
+        "international organisations"
+      ]
+    },
+    {
+      "id": "qb-064",
+      "question": "Who can get an HKSAR passport?",
+      "variants": [
+        "Can a non-Chinese resident get a Hong Kong travel document?",
+        "Does Hong Kong control its own immigration?"
+      ],
+      "articles": [
+        154
+      ],
+      "tags": [
+        "passport",
+        "travel document",
+        "immigration control"
+      ]
+    },
+    {
+      "id": "qb-065",
+      "question": "Can Hong Kong arrange visa-free travel with other countries?",
+      "variants": [
+        "Who negotiates visa abolition agreements for Hong Kong?",
+        "Does the Basic Law mention visa-free access?"
+      ],
+      "articles": [
+        155
+      ],
+      "tags": [
+        "visa",
+        "visa abolition"
+      ]
+    },
+    {
+      "id": "qb-066",
+      "question": "Who has the final say on interpreting the Basic Law?",
+      "variants": [
+        "Can Hong Kong courts interpret the Basic Law themselves?",
+        "When must the Court of Final Appeal seek an interpretation from the NPC Standing Committee?"
+      ],
+      "articles": [
+        158
+      ],
+      "tags": [
+        "interpretation",
+        "NPCSC",
+        "courts"
+      ]
+    },
+    {
+      "id": "qb-067",
+      "question": "How can the Basic Law be amended?",
+      "variants": [
+        "Who can propose amendments to the Basic Law?",
+        "Can an amendment contradict China's basic policies regarding Hong Kong?"
+      ],
+      "articles": [
+        159
+      ],
+      "tags": [
+        "amendment",
+        "NPC"
+      ]
+    },
+    {
+      "id": "qb-068",
+      "question": "Are the laws in force before 1997 still valid?",
+      "variants": [
+        "Does the common law still apply in Hong Kong?",
+        "What happened to old ordinances at the handover?"
+      ],
+      "articles": [
+        8,
+        160,
+        18
+      ],
+      "tags": [
+        "common law",
+        "previous laws",
+        "handover",
+        "still apply",
+        "ordinances",
+        "equity",
+        "customary law"
+      ]
+    },
+    {
+      "id": "qb-069",
+      "question": "Which mainland national laws apply in Hong Kong?",
+      "variants": [
+        "Does PRC national law apply in Hong Kong?",
+        "What is Annex III of the Basic Law?"
+      ],
+      "articles": [
+        18
+      ],
+      "tags": [
+        "national laws",
+        "Annex III"
+      ]
+    },
+    {
+      "id": "qb-070",
+      "question": "Can mainland government departments interfere in Hong Kong's affairs?",
+      "variants": [
+        "Do mainland offices in Hong Kong have to follow Hong Kong law?",
+        "Do people from other parts of China need approval to enter Hong Kong?"
+      ],
+      "articles": [
+        22
+      ],
+      "tags": [
+        "Central Government",
+        "interference",
+        "entry approval",
+        "mainland offices",
+        "follow Hong Kong law",
+        "abide",
+        "provinces",
+        "municipalities"
+      ]
+    },
+    {
+      "id": "qb-071",
+      "question": "Does Hong Kong have to enact its own national security laws?",
+      "variants": [
+        "What does Article 23 require?",
+        "Which acts must Hong Kong prohibit on its own?"
+      ],
+      "articles": [
+        23
+      ],
+      "tags": [
+        "national security",
+        "Article 23"
+      ]
+    },
+    {
+      "id": "qb-072",
+      "question": "Is English an official language in Hong Kong?",
+      "variants": [
+        "Can I use English in court and in dealing with the government?",
+        "What are Hong Kong's official languages?"
+      ],
+      "articles": [
+        9
+      ],
+      "tags": [
+        "language",
+        "English",
+        "Chinese",
+        "official language",
+        "court",
+        "dealings with government",
+        "Chinese language"
+      ]
+    },
+    {
+      "id": "qb-073",
+      "question": "Will the capitalist system remain unchanged for 50 years?",
+      "variants": [
+        "Does socialism apply in Hong Kong?",
+        "What does 'unchanged for 50 years' refer to?"
+      ],
+      "articles": [
+        5
+      ],
+      "tags": [
+        "capitalist system",
+        "50 years",
+        "one country two systems",
+        "socialism",
+        "socialist",
+        "capitalist",
+        "way of life"
+      ]
+    },
+    {
+      "id": "qb-074",
+      "question": "Who is responsible for Hong Kong's defence, and does Hong Kong pay for the garrison?",
+      "variants": [
+        "Can the garrison interfere in local affairs?",
+        "Who maintains public order in Hong Kong?"
+      ],
+      "articles": [
+        14
+      ],
+      "tags": [
+        "defence",
+        "garrison",
+        "public order"
+      ]
+    },
+    {
+      "id": "qb-075",
+      "question": "Who handles Hong Kong's foreign affairs?",
+      "variants": [
+        "Can Hong Kong conduct external affairs on its own?",
+        "Is there a Foreign Ministry office in Hong Kong?"
+      ],
+      "articles": [
+        13,
+        151
+      ],
+      "tags": [
+        "foreign affairs",
+        "external affairs"
+      ]
+    },
+    {
+      "id": "qb-076",
+      "question": "Does Hong Kong have its own flag and emblem?",
+      "variants": [
+        "Can the regional flag be flown alongside the national flag?",
+        "What is the design of the Hong Kong regional flag?"
+      ],
+      "articles": [
+        10
+      ],
+      "tags": [
+        "flag",
+        "emblem"
+      ]
+    },
+    {
+      "id": "qb-077",
+      "question": "Can Hong Kong residents take part in national politics?",
+      "variants": [
+        "How are Hong Kong deputies to the National People's Congress chosen?",
+        "Can Hong Kong Chinese citizens participate in state affairs?"
+      ],
+      "articles": [
+        21
+      ],
+      "tags": [
+        "NPC deputies",
+        "state affairs",
+        "deputies",
+        "NPC",
+        "chosen",
+        "elect"
+      ]
+    },
+    {
+      "id": "qb-078",
+      "question": "What is Hong Kong's degree of autonomy under the Basic Law?",
+      "variants": [
+        "Which powers does Hong Kong exercise on its own?",
+        "Is Hong Kong directly under the Central People's Government?"
+      ],
+      "articles": [
+        2,
+        12,
+        16,
+        17,
+        19
+      ],
+      "tags": [
+        "autonomy",
+        "executive",
+        "legislative",
+        "judicial",
+        "powers on its own",
+        "high degree of autonomy",
+        "final adjudication"
+      ]
+    },
+    {
+      "id": "qb-079",
+      "question": "Can Hong Kong courts rule on acts of state like defence and foreign affairs?",
+      "variants": [
+        "Do the courts have jurisdiction over all cases?",
+        "What is a certificate from the Chief Executive on acts of state?"
+      ],
+      "articles": [
+        19
+      ],
+      "tags": [
+        "jurisdiction",
+        "acts of state",
+        "certificate"
+      ]
+    },
+    {
+      "id": "qb-080",
+      "question": "Can the Basic Law be overridden by ordinary Hong Kong laws?",
+      "variants": [
+        "What happens if a Hong Kong law contravenes the Basic Law?",
+        "Can the NPC Standing Committee return a Hong Kong law?"
+      ],
+      "articles": [
+        11,
+        17
+      ],
+      "tags": [
+        "supremacy",
+        "contravention",
+        "NPCSC"
+      ]
+    }
+  ]
+}

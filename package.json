@@ -12,7 +12,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "corpus:build": "python3 scripts/parse_basic_law.py"
+    "corpus:build": "python3 scripts/parse_basic_law.py",
+    "eval:retrieval": "tsx scripts/eval-retrieval.ts"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.68",

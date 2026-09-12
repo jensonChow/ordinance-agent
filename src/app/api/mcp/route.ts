@@ -1,6 +1,6 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
-import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, searchArticles } from "@/lib/law";
+import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, searchArticlesSmart, searchQuestions } from "@/lib/law";
 
 export const runtime = "nodejs";
 
@@ -31,22 +31,50 @@ const handler = createMcpHandler(
       {
         title: "Search articles",
         description:
-          "Full-text search over the 160 articles of the Basic Law (PostgreSQL websearch syntax: quoted phrases, OR, -exclusions). Returns ranked hits with highlighted snippets. Follow up with get_article for the full text before quoting.",
+          "Full-text search over the 160 articles of the Basic Law. Strict matches (PostgreSQL websearch syntax: quoted phrases, OR, -exclusions) come first, then loose any-term matches fill the list; each hit says which. Returns ranked hits with highlighted snippets. Follow up with get_article for the full text before quoting.",
         inputSchema: z.object({
           query: z.string().min(2).max(200).describe("Search terms, e.g. 'permanent resident seven years'"),
           limit: z.number().int().min(1).max(10).default(5),
         }),
       },
       async ({ query, limit }) => {
-        const hits = await searchArticles(query, limit);
+        const hits = await searchArticlesSmart(query, limit);
         return text({
           query,
           hits: hits.map((h) => ({
             article: h.number,
             citation: formatCitation(h.number),
             chapter: `${h.chapterNumber} ${h.chapterTitle}`,
+            match: h.mode,
             rank: Number(h.rank.toFixed(4)),
             snippet: h.snippet,
+          })),
+        });
+      },
+    );
+
+    server.registerTool(
+      "find_questions",
+      {
+        title: "Find study questions",
+        description:
+          "Match an everyday-language question against the study question bank (80 lay questions, each mapped to the Basic Law articles that answer it). Use this first when the user's wording is not legal wording; then read the articles with get_article.",
+        inputSchema: z.object({
+          query: z.string().min(2).max(300).describe("The user's question in their own words"),
+          limit: z.number().int().min(1).max(5).default(3),
+        }),
+      },
+      async ({ query, limit }) => {
+        const hits = await searchQuestions(query, limit);
+        return text({
+          query,
+          questions: hits.map((h) => ({
+            id: h.id,
+            question: h.text,
+            articles: h.articles,
+            citations: h.articles.map((n) => formatCitation(n)),
+            tags: h.tags,
+            rank: Number(h.rank.toFixed(4)),
           })),
         });
       },

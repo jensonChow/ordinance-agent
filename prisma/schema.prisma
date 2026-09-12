@@ -37,6 +37,8 @@ model Article {
   chapterNumber String
   sectionId     Int?
   text          String
+  /// `text` with the boilerplate phrases every article repeats ("of the Hong Kong Special Administrative Region", "of the People's Republic of China") removed; used by loose full-text search so those words stop dominating density ranking.
+  searchText    String   @default("")
   notes         String[] @default([])
   chapter       Chapter  @relation(fields: [chapterNumber], references: [number])
   section       Section? @relation(fields: [sectionId], references: [id])
@@ -117,4 +119,15 @@ model Note {
   conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+}
+
+/// Study question bank: a lay-language question, its paraphrases (held out for evaluation) and the articles that answer it.
+model Question {
+  id       String   @id
+  text     String
+  variants String[] @default([])
+  articles Int[]
+  tags     String[] @default([])
+  /// text + tags joined at seed time; indexed with to_tsvector (array_to_string is not IMMUTABLE, so it cannot sit in the index expression).
+  searchText String @default("")
 }
