@@ -36,6 +36,13 @@ Python 3.9 venv for the Flask service. Package versions: next 16.3.4, ai 7.0.97,
 | Typecheck / lint | `npx tsc --noEmit`, `npm run lint` | exit 0 |
 | Agent loop, keyless | `node scripts/smoke-chat.mjs http://127.0.0.1:3100` (mock model) | see the commit log; the mock still walks search_articles → get_article → answer |
 
+## 2026-09-13
+
+| Step | Command | Result |
+|---|---|---|
+| Unit tests without a database | `npm test` with `DATABASE_URL` unset | `tests/law.test.ts` failed at import: `src/lib/law.ts` builds the Prisma client eagerly. Fixed by moving the pure helpers (`stripDomainStopwords`, `formatCitation`) to `src/lib/text.ts` (re-exported from `law.ts`); the unit suite no longer touches the database. `vitest.config.ts` → `.mts` to silence the ESM-in-CJS warning |
+| Tests / typecheck / lint | `npm test`, `npx tsc --noEmit`, `npm run lint` (local cluster on 5433 up) | 3 files, 10 tests passed; tsc exit 0; eslint exit 0 |
+
 ## Not verified
 
 - **Azure OpenAI**: the provider path (`@ai-sdk/azure`, `createAzure({ resourceName, apiKey })`, deployment as model id)

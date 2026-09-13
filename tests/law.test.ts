@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCitation, stripDomainStopwords } from "@/lib/law";
+import { formatCitation, stripDomainStopwords } from "@/lib/text";
 
 describe("formatCitation", () => {
   it("formats article and paragraph", () => {
