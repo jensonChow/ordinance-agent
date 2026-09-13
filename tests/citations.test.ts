@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { UIMessage } from "ai";
-import { messageCitations, unwrapToolOutput } from "@/lib/citations";
+import { citationStatus, explainProvenance, messageCitations, unwrapToolOutput } from "@/lib/citations";
 import { citedArticles, toolTraces } from "@/lib/trace";
 
 const mcpOutput = (payload: unknown) => ({ content: [{ type: "text", text: JSON.stringify(payload) }] });
@@ -32,6 +32,65 @@ describe("messageCitations", () => {
     expect(c.mentioned).toEqual([24, 39]);
     expect(c.toolCalls).toBe(3);
     expect(c.mcpCalls).toBe(2);
+  });
+
+  it("records which retrieval path surfaced each article", () => {
+    const message: UIMessage = {
+      id: "a_2",
+      role: "assistant",
+      parts: [
+        {
+          type: "dynamic-tool",
+          toolName: "find_questions",
+          toolCallId: "q1",
+          state: "output-available",
+          input: { query: "customs duty" },
+          output: mcpOutput({ questions: [{ id: "qb-055", articles: [114] }] }),
+        },
+        {
+          type: "dynamic-tool",
+          toolName: "search_articles",
+          toolCallId: "s1",
+          state: "output-available",
+          input: { query: "customs duty" },
+          output: mcpOutput({ hits: [{ article: 114, match: "loose" }, { article: 89, match: "loose" }] }),
+        },
+        {
+          type: "dynamic-tool",
+          toolName: "get_article",
+          toolCallId: "g1",
+          state: "output-available",
+          input: { number: 114 },
+          output: mcpOutput({ article: 114, text: "…" }),
+        },
+        { type: "text", text: "Article 114 makes Hong Kong a free port. See also Article 106." },
+      ] as UIMessage["parts"],
+    };
+    const c = messageCitations(message);
+    expect(c.provenance[114]).toEqual({
+      read: true,
+      mentioned: true,
+      found: ["question bank (qb-055)", "full-text search (loose)"],
+    });
+    // surfaced by search but never read or named
+    expect(c.provenance[89]).toEqual({ read: false, mentioned: false, found: ["full-text search (loose)"] });
+    // named in the answer with no tool ever returning it
+    expect(c.provenance[106]).toEqual({ read: false, mentioned: true, found: [] });
+  });
+});
+
+describe("citationStatus / explainProvenance", () => {
+  it("flags an article the model named but never looked up", () => {
+    const p = { read: false, mentioned: true, found: [] };
+    expect(citationStatus(p)).toBe("unverified");
+    expect(explainProvenance(106, p)).toMatch(/never returned by a tool/);
+  });
+  it("ranks read above merely retrieved", () => {
+    expect(citationStatus({ read: true, mentioned: false, found: ["question bank (qb-055)"] })).toBe("read");
+    expect(citationStatus({ read: false, mentioned: false, found: ["full-text search (strict)"] })).toBe("retrieved");
+    expect(explainProvenance(114, { read: true, mentioned: true, found: ["question bank (qb-055)"] })).toMatch(
+      /Found via question bank \(qb-055\)/,
+    );
   });
 });
 

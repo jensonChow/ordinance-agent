@@ -1,6 +1,7 @@
+import { ResourceTemplate } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
-import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, searchArticlesSmart, searchQuestions } from "@/lib/law";
+import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesSmart, searchQuestions } from "@/lib/law";
 
 export const runtime = "nodejs";
 
@@ -135,8 +136,152 @@ const handler = createMcpHandler(
         return text({ annex: annex.id, title: annex.title, text: annex.text });
       },
     );
+
+    // ---------------------------------------------------------------- resources
+    // Tools are for the agent loop; resources let a human-driven client (Claude, Cursor) browse the corpus
+    // and attach a specific article to its context without spending a tool call.
+
+    server.registerResource(
+      "contents",
+      "basic-law://contents",
+      { title: "Table of contents", description: "Chapters, sections and article ranges of the Basic Law.", mimeType: "text/markdown" },
+      async (uri) => {
+        const chapters = await listChapters();
+        const body = chapters
+          .map((c) => {
+            const range = c.articles ? ` (Articles ${c.articles.from}–${c.articles.to})` : "";
+            const sections = c.sections.map((s) => `\n  - Section ${s.number}. ${s.title}`).join("");
+            return `- **Chapter ${c.number}. ${c.title}**${range}${sections}`;
+          })
+          .join("\n");
+        return { contents: [{ uri: uri.href, mimeType: "text/markdown", text: `# Basic Law — contents\n\n${body}\n` }] };
+      },
+    );
+
+    server.registerResource(
+      "question-bank",
+      "basic-law://question-bank",
+      {
+        title: "Study question bank",
+        description: "80 everyday-language questions, each mapped to the articles that answer it.",
+        mimeType: "application/json",
+      },
+      async (uri) => {
+        const questions = await listQuestions();
+        return { contents: [{ uri: uri.href, mimeType: "application/json", text: JSON.stringify({ questions }, null, 2) }] };
+      },
+    );
+
+    server.registerResource(
+      "article",
+      new ResourceTemplate("basic-law://article/{number}", {
+        // Listing all 160 articles would flood a client's resource list; they are reachable by URI and through search.
+        list: undefined,
+        complete: {
+          number: (value) =>
+            Array.from({ length: 160 }, (_, i) => String(i + 1))
+              .filter((n) => n.startsWith(value))
+              .slice(0, 20),
+        },
+      }),
+      { title: "Article", description: "Full text of one article, 1–160.", mimeType: "text/plain" },
+      async (uri, { number }) => {
+        const n = Number(Array.isArray(number) ? number[0] : number);
+        const a = Number.isInteger(n) ? await getArticle(n) : null;
+        if (!a) throw new Error(`Article ${String(number)} not found (valid range 1–160)`);
+        const notes = a.notes.length ? `\n\nNotes:\n${a.notes.map((x) => `- ${x}`).join("\n")}` : "";
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: "text/plain",
+              text: `${formatCitation(a.number)} — Chapter ${a.chapter.number} ${a.chapter.title}\n\n${a.text}${notes}`,
+            },
+          ],
+        };
+      },
+    );
+
+    // ------------------------------------------------------------------ prompts
+    // The retrieval discipline this project cares about (look it up, then cite it), packaged so any MCP client
+    // gets the same behaviour as the built-in chat route.
+
+    server.registerPrompt(
+      "answer-with-citations",
+      {
+        title: "Answer with citations",
+        description: "Answer a lay question about the Basic Law by looking the text up first and citing every article used.",
+        argsSchema: z.object({ question: z.string().min(2).describe("The question in the user's own words") }),
+      },
+      ({ question }) => ({
+        messages: [
+          {
+            role: "user" as const,
+            content: {
+              type: "text" as const,
+              text: `Answer this question about the Basic Law of the Hong Kong SAR: "${question}"
+
+Work in this order:
+1. call find_questions with the question as written — the study bank maps lay wording to articles;
+2. if that returns nothing useful, call search_articles;
+3. call get_article for every article you intend to rely on, and read it before quoting;
+4. answer in a few sentences, quote the operative wording, and cite each article as "Article N".
+
+Never name an article you have not read. If the Basic Law does not settle the question, say so. This is a study aid, not legal advice.`,
+            },
+          },
+        ],
+      }),
+    );
+
+    server.registerPrompt(
+      "explain-article",
+      {
+        title: "Explain an article",
+        description: "Explain one article in plain language for a reader with no legal training.",
+        argsSchema: z.object({
+          number: z.string().describe("Article number, 1–160"),
+          audience: z.string().optional().describe("Who it is for, e.g. 'a secondary school class'"),
+        }),
+      },
+      ({ number, audience }) => ({
+        messages: [
+          {
+            role: "user" as const,
+            content: {
+              type: "text" as const,
+              text: `Read Article ${number} of the Basic Law with get_article (or the basic-law://article/${number} resource), then explain it${
+                audience ? ` for ${audience}` : " for a reader with no legal training"
+              }.
+
+Give: one sentence on what it does; the operative wording quoted; what it does not cover; any NPCSC interpretation note attached to it. Cite it as "Article ${number}". This is a study aid, not legal advice.`,
+            },
+          },
+        ],
+      }),
+    );
+
+    server.registerPrompt(
+      "compare-articles",
+      {
+        title: "Compare two articles",
+        description: "Read two articles and set out how they interact.",
+        argsSchema: z.object({ first: z.string().describe("First article number"), second: z.string().describe("Second article number") }),
+      },
+      ({ first, second }) => ({
+        messages: [
+          {
+            role: "user" as const,
+            content: {
+              type: "text" as const,
+              text: `Call get_article for Article ${first} and Article ${second}, then compare them: what each one does, where they overlap, and whether one qualifies the other. Quote the wording you rely on and cite both. If they do not interact, say so plainly.`,
+            },
+          },
+        ],
+      }),
+    );
   },
-  { serverInfo: { name: "basic-law-mcp", version: "0.1.0" } },
+  { serverInfo: { name: "basic-law-mcp", version: "0.2.0" } },
 );
 
 export { handler as GET, handler as POST, handler as DELETE };

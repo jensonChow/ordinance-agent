@@ -2,7 +2,9 @@ import { createMCPClient } from "@ai-sdk/mcp";
 import { convertToModelMessages, isStepCount, streamText, tool, type UIMessage } from "ai";
 import { z } from "zod";
 import { getModel } from "@/lib/ai";
+import { callCitationService } from "@/lib/citation-service";
 import { formatCitation } from "@/lib/law";
+import { parseCitations, type ParsedCitation } from "@/lib/text";
 import { prisma } from "@/lib/prisma";
 import { citedArticles, toolTraces } from "@/lib/trace";
 
@@ -55,21 +57,22 @@ export async function POST(req: Request) {
       description: "Format a citation string for an article and optional paragraph number.",
       inputSchema: z.object({ article: z.number().int().min(1).max(160), paragraph: z.number().int().min(1).optional() }),
       execute: async ({ article, paragraph }) => {
-        const svc = process.env.CITATION_SERVICE_URL;
-        if (svc) {
-          // Optional Python (Flask + Gunicorn) microservice; falls back to the local formatter on any error.
-          try {
-            const res = await fetch(`${svc}/cite`, {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ article, paragraph }),
-            });
-            if (res.ok) return (await res.json()) as { citation: string };
-          } catch {
-            /* fall through */
-          }
-        }
-        return { citation: formatCitation(article, paragraph) };
+        // Optional Python (Flask + Gunicorn) service; falls back to the local formatter when it is not there.
+        const remote = await callCitationService<{ citation: string }>("/cite", { article, paragraph });
+        return remote
+          ? { ...remote, source: "python-service" as const }
+          : { citation: formatCitation(article, paragraph), source: "local" as const };
+      },
+    }),
+    parse_citations: tool({
+      description:
+        "Extract Basic Law citations from a passage the user pasted (essay, judgment, notes), e.g. 'BL art 24(2), Articles 39 and 41, Articles 45 to 47'. Returns the article numbers so you can read them with get_article.",
+      inputSchema: z.object({ text: z.string().min(2).max(20000).describe("Free text that may contain citations") }),
+      execute: async ({ text }) => {
+        const remote = await callCitationService<{ citations: ParsedCitation[]; count: number }>("/parse", { text });
+        if (remote) return { ...remote, source: "python-service" as const };
+        const citations = parseCitations(text);
+        return { citations, count: citations.length, source: "local" as const };
       },
     }),
   };

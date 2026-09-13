@@ -18,9 +18,23 @@ export function createMockModel(): LanguageModelV3 {
           ? lastUser.content.map((p) => ("text" in p ? p.text : "")).join(" ")
           : "";
       const wantsNote = /\bnote\b/i.test(userText);
+      // Lay-wording branch: goes through the question bank, and deliberately ends by naming one article it never
+      // read (Article 106). That is not a bug — it is the fixture for the unverified-citation guard in the UI
+      // (src/lib/citations.ts), so the amber chip can be demonstrated without a live model.
+      const layQuestion = /customs|duty|duties|import|bring in/i.test(userText);
 
       let parts: LanguageModelV3StreamPart[];
-      if (wantsNote && toolSteps === 0) {
+      if (layQuestion && !wantsNote) {
+        if (toolSteps === 0) {
+          parts = toolCall("call_find", "find_questions", { query: userText.slice(0, 300), limit: 3 });
+        } else if (toolSteps === 1) {
+          parts = toolCall("call_get_114", "get_article", { number: 114 });
+        } else {
+          parts = text(
+            "Article 114 makes Hong Kong a free port: the Region “shall maintain the status of a free port and shall not impose any tariff unless otherwise prescribed by law”. So ordinary goods brought in are not subject to a customs tariff, though specific duties can still be imposed by ordinary legislation. Article 106 leaves the Region its own finances, which is why these decisions are made locally.",
+          );
+        }
+      } else if (wantsNote && toolSteps === 0) {
         parts = toolCall("call_note", "save_note", { body: userText.replace(/^.*?note:?\s*/i, "").trim() || userText, article: 39 });
       } else if (wantsNote) {
         parts = text("Saved your note against Article 39. Say “list my notes” any time to review them.");

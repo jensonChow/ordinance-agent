@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { messageCitations, unwrapToolOutput } from "@/lib/citations";
+import { citationStatus, explainProvenance, messageCitations, unwrapToolOutput, type CitationStatus } from "@/lib/citations";
 
 type ToolPart = {
   type: string;
@@ -56,19 +56,41 @@ function ToolCard({ part }: { part: ToolPart }) {
   );
 }
 
-function Chip({ n, kind, onOpen }: { n: number; kind: "read" | "mentioned"; onOpen: (n: number) => void }) {
+const CHIP_STYLE: Record<CitationStatus, string> = {
+  read: "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+  retrieved: "border-neutral-300 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-black dark:text-neutral-300",
+  unverified: "border-amber-400 bg-amber-50 text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-200",
+};
+
+/** Short marker for the retrieval path that surfaced the article: question bank, full-text search, or nothing. */
+function pathMark(found: string[]): string | null {
+  if (found.some((f) => f.startsWith("question bank"))) return "qb";
+  if (found.some((f) => f.startsWith("full-text"))) return "fts";
+  return null;
+}
+
+function Chip({
+  n,
+  status,
+  found,
+  onOpen,
+}: {
+  n: number;
+  status: CitationStatus;
+  found: string[];
+  onOpen: (n: number) => void;
+}) {
+  const mark = pathMark(found);
   return (
     <button
       type="button"
       onClick={() => onOpen(n)}
-      title={kind === "read" ? "The agent read this article's full text" : "Named in the answer"}
-      className={`rounded-full border px-2 py-0.5 font-mono text-[11px] hover:bg-neutral-200 dark:hover:bg-neutral-800 ${
-        kind === "read"
-          ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-          : "border-neutral-300 bg-white text-neutral-700 dark:border-neutral-700 dark:bg-black dark:text-neutral-300"
-      }`}
+      title={explainProvenance(n, { read: status === "read", mentioned: true, found })}
+      className={`rounded-full border px-2 py-0.5 font-mono text-[11px] hover:bg-neutral-200 dark:hover:bg-neutral-800 ${CHIP_STYLE[status]}`}
     >
       Art. {n}
+      {status === "unverified" ? <span className="ml-1 not-italic">⚠</span> : null}
+      {mark ? <span className="ml-1 opacity-60">{mark}</span> : null}
     </button>
   );
 }
@@ -77,7 +99,16 @@ function MessageView({ message, onOpen }: { message: UIMessage; onOpen: (n: numb
   const isUser = message.role === "user";
   const meta = message.metadata as { provider?: string; model?: string } | undefined;
   const cites = isUser ? null : messageCitations(message);
-  const chips = cites ? [...cites.read.map((n) => ({ n, kind: "read" as const })), ...cites.mentioned.filter((n) => !cites.read.includes(n)).map((n) => ({ n, kind: "mentioned" as const }))] : [];
+  // Chip row = every article the answer stands on: read in full, or named in the text.
+  const chips = cites
+    ? [...new Set([...cites.read, ...cites.mentioned])]
+        .sort((a, b) => a - b)
+        .map((n) => {
+          const p = cites.provenance[n];
+          return { n, status: citationStatus(p), found: p?.found ?? [] };
+        })
+    : [];
+  const unverified = chips.filter((c) => c.status === "unverified").length;
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
@@ -106,7 +137,7 @@ function MessageView({ message, onOpen }: { message: UIMessage; onOpen: (n: numb
           <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-neutral-200 pt-2 text-[11px] text-neutral-500 dark:border-neutral-800">
             {chips.length > 0 ? <span className="mr-1">Sources</span> : null}
             {chips.map((c) => (
-              <Chip key={`${c.kind}-${c.n}`} n={c.n} kind={c.kind} onOpen={onOpen} />
+              <Chip key={c.n} n={c.n} status={c.status} found={c.found} onOpen={onOpen} />
             ))}
             {cites.toolCalls > 0 ? (
               <span className="ml-auto">
@@ -114,6 +145,12 @@ function MessageView({ message, onOpen }: { message: UIMessage; onOpen: (n: numb
                 {cites.mcpCalls ? ` · ${cites.mcpCalls} via MCP` : ""}
                 {meta?.model ? ` · ${meta.provider} / ${meta.model}` : ""}
               </span>
+            ) : null}
+            {unverified > 0 ? (
+              <p className="basis-full text-amber-700 dark:text-amber-300">
+                ⚠ {unverified} article{unverified === 1 ? "" : "s"} named in this answer {unverified === 1 ? "was" : "were"}{" "}
+                never returned by a tool.
+              </p>
             ) : null}
           </div>
         ) : null}

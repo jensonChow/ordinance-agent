@@ -42,6 +42,15 @@ Python 3.9 venv for the Flask service. Package versions: next 16.3.4, ai 7.0.97,
 |---|---|---|
 | Unit tests without a database | `npm test` with `DATABASE_URL` unset | `tests/law.test.ts` failed at import: `src/lib/law.ts` builds the Prisma client eagerly. Fixed by moving the pure helpers (`stripDomainStopwords`, `formatCitation`) to `src/lib/text.ts` (re-exported from `law.ts`); the unit suite no longer touches the database. `vitest.config.ts` → `.mts` to silence the ESM-in-CJS warning |
 | Tests / typecheck / lint | `npm test`, `npx tsc --noEmit`, `npm run lint` (local cluster on 5433 up) | 3 files, 10 tests passed; tsc exit 0; eslint exit 0 |
+| MCP surface | `resources/list`, `resources/templates/list`, `prompts/list` over JSON-RPC on the dev server | 2 resources (`basic-law://contents` markdown, `basic-law://question-bank` JSON), 1 template (`basic-law://article/{number}`), 3 prompts (`answer-with-citations`, `explain-article`, `compare-articles`) |
+| MCP resource read | `resources/read {"uri":"basic-law://article/24"}` | returns `Basic Law, art. 24 — Chapter III …` with the full text; `basic-law://contents` returns the nine chapters with article ranges |
+| MCP prompt get | `prompts/get explain-article {number: 39, audience: "a secondary school class"}` | renders the instruction with both arguments substituted |
+| Citation audit | `npm test` + the browser at `localhost:3100` | chips render green `Art. 24 fts` / green `Art. 114 qb` / amber `Art. 106 ⚠` with "1 article named in this answer was never returned by a tool"; no console errors |
+| Agent loop, keyless | `node scripts/smoke-chat.mjs http://127.0.0.1:3100` (mock model), now three turns | `SMOKE OK`. Turn 3 walks `find_questions` → `get_article(114)` → answer, and by design names Article 106 without reading it so the audit has something to catch |
+| Python service | Flask test client against `services/citation-py/app.py` | `GET /` service index 200, `GET /healthz` 200, `POST /cite` → `Basic Law, art. 24(2)`, `style=long` → full form, `article=999` → 400, `POST /parse` → 6 citations from "see BL art 24(2), Articles 39 and 41, and Articles 45 to 47", empty body → 400 |
+| Parser parity | same three inputs through `parseCitations()` (TypeScript) and `parse_citations()` (Python) | byte-identical results, including the expanded range 45/46/47 and dropping Article 999 |
+| Service fallback | `tests/citation-service.test.ts` with a stubbed `fetch` | returns the body on 200; returns null (so the caller uses the local path) when unset, on 500, on a network error and on a timeout; trailing slash in the base URL handled |
+| Tests / typecheck / lint (after the above) | `npm test`, `npx tsc --noEmit`, `npm run lint` | 4 files, 20 tests passed; tsc exit 0; eslint exit 0 |
 
 ## Not verified
 
@@ -50,7 +59,10 @@ Python 3.9 venv for the Flask service. Package versions: next 16.3.4, ai 7.0.97,
 - **OpenAI-compatible fallback**: same — wired, not exercised against a live endpoint.
 - **Vercel deployment**: not deployed yet.
 - **Docker image** for the Flask service: Dockerfile written, not built (no Docker on the build machine); the same
-  `gunicorn` command was run directly in a venv.
+  `gunicorn` command was run directly in a venv on 2026-09-10. The endpoints added on 2026-09-13 (`GET /`, `POST /parse`)
+  were exercised through Flask's test client, not through Gunicorn.
+- **`deploy/apache/basic-law.conf` and `deploy/systemd/citation-py.service`**: written as worked examples from the
+  documented directives; never loaded by an Apache or systemd instance, and not touched by CI.
 - **Concurrency / multi-user behaviour**: single-user local runs only.
 
 ## One bug found and fixed during verification

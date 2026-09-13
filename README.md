@@ -11,13 +11,15 @@ Next.js 16 (App Router, TypeScript)
 ├─ /                 chat UI (@ai-sdk/react useChat) + notes / corpus sidebar (server-rendered from Prisma)
 ├─ /api/chat         agent loop: streamText + tool calling, stopWhen isStepCount(8)
 │                    tools = MCP tools discovered at runtime (@ai-sdk/mcp)  +  local Prisma tools (save_note, list_notes, format_citation)
-├─ /api/mcp          Basic Law MCP server (mcp-handler, Streamable HTTP, stateless, 6 tools) — usable from Claude / Cursor / Codex too
+├─ /api/mcp          Basic Law MCP server (mcp-handler, Streamable HTTP, stateless) — usable from Claude / Cursor / Codex too
+│                    6 tools · 2 resources + an article template · 3 prompts
 ├─ /api/conversations, /api/notes
 ├─ prisma/           schema (Chapter, Section, Article, Annex, Conversation, Message, ToolCall, Citation, Note), migrations, seed
 ├─ data/             basic-law.en.json  ←  scripts/parse_basic_law.py  ←  official booklet PDF
 │                    question-bank.json — 80 lay questions → articles, each with 2 held-out paraphrases for evaluation
 ├─ scripts/eval-retrieval.ts   retrieval evaluation (eval/RESULTS.md)
-└─ services/citation-py   optional Flask app served by Gunicorn (Dockerfile included)
+├─ services/citation-py   optional Flask app served by Gunicorn (Dockerfile included)
+└─ deploy/            example Apache vhost and systemd unit for a plain Linux host
 ```
 
 ```mermaid
@@ -41,10 +43,27 @@ flowchart LR
 | `get_article` / `get_articles` | MCP server | Full text of one article or a range, with chapter/section and NPCSC-interpretation footnotes |
 | `get_annex` | MCP server | Annexes I–III |
 | `save_note` / `list_notes` | local (Prisma) | Study notes, optionally attached to an article |
-| `format_citation` | local → Flask | Citation string; calls the Python service when `CITATION_SERVICE_URL` is set |
+| `format_citation` | local → Flask | Citation string; calls the Python service when `CITATION_SERVICE_URL` is set, otherwise formats locally |
+| `parse_citations` | local → Flask | Pulls citations out of a pasted passage (`BL art 24(2), Articles 45 to 47`) so they can be read with `get_article` |
 
 Every assistant turn is persisted with its **UI message parts**, the **tool calls** it made (input, output, source
 `mcp`/`local`) and the **articles it cited**, so a conversation is auditable after the fact.
+
+## Citation audit: what the answer actually stands on
+
+The interesting failure of a legal assistant is not a wrong sentence, it is a *confident* sentence citing an article
+the model never opened. Every article chip under an answer is therefore derived from that message's own tool calls,
+never from the prose:
+
+| chip | meaning |
+|---|---|
+| green, `Art. 24 fts` | the agent read the full text; `fts` / `qb` says whether full-text search or the question bank surfaced it |
+| plain | retrieval returned it, but the full text was never read |
+| **amber, `Art. 106 ⚠`** | the answer names it and **no tool ever returned it** — the number came from the model's memory |
+
+`messageCitations()` in `src/lib/citations.ts` computes this. The mock provider deliberately ends one scripted answer
+by naming an article it did not read, so the amber state is reachable from `npm test` and from the keyless smoke run
+instead of only in theory.
 
 ## Retrieval: why a question bank
 
@@ -118,6 +137,21 @@ curl -s -X POST http://localhost:3000/api/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"search_articles","arguments":{"query":"permanent resident seven years","limit":3}}}'
 ```
 
+Beyond tools, the server exposes the corpus as **resources** and the house retrieval discipline as **prompts**, so a
+human-driven client can attach one article to its context, or reuse the workflow, without going through the chat route:
+
+| kind | name | |
+|---|---|---|
+| resource | `basic-law://contents` | chapters, sections and article ranges (markdown) |
+| resource | `basic-law://question-bank` | the 80 lay questions and their articles (JSON) |
+| resource template | `basic-law://article/{number}` | one article, with completion over 1–160 |
+| prompt | `answer-with-citations` | find_questions → search_articles → get_article → answer, citing every article read |
+| prompt | `explain-article` | plain-language explanation of one article for a stated audience |
+| prompt | `compare-articles` | read two articles and set out how they interact |
+
+Swap `tools/call` above for `resources/list`, `resources/templates/list`, `prompts/list`, `resources/read` or
+`prompts/get` to see them.
+
 ### Rebuild the corpus
 
 ```bash
@@ -135,7 +169,11 @@ that all 160 articles are present exactly once.
   variables; run `npx prisma migrate deploy && npm run db:seed` once against the production database. `/api/chat`
   reaches the MCP server on the same deployment; override with `MCP_SERVER_URL` if you host it elsewhere.
 - **Citation service**: `docker build -t citation-py services/citation-py && docker run -p 8000:8000 citation-py`, then set
-  `CITATION_SERVICE_URL=http://host:8000`. Without it the agent formats citations locally.
+  `CITATION_SERVICE_URL=http://host:8000`. Without it the agent formats and parses citations locally — the service is
+  optional on purpose, and every call to it is bounded by a 2.5s timeout that falls back rather than stalling the loop.
+- **Plain Linux host (Apache + Gunicorn)**: `deploy/apache/basic-law.conf` fronts the Node app and proxies the Python
+  service under `/citations/`; `deploy/systemd/citation-py.service` runs Gunicorn. Both are committed as worked
+  examples and are not exercised by CI.
 
 ## Data
 

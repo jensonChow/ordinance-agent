@@ -56,8 +56,18 @@ const t2 = summarise(
 );
 console.log("turn 2", JSON.stringify(t2, null, 1));
 
+const t3 = summarise(
+  await turn(conv.id, "u3", "Do I pay customs duty on goods I bring into Hong Kong?", []),
+);
+console.log("turn 3", JSON.stringify(t3, null, 1));
+
+// Turn 3 walks the question-bank path and, by design, names one article it never read (Article 106) so the
+// unverified-citation guard has something to catch. See src/lib/mock-model.ts and src/lib/citations.ts.
+const namesUnread = t3.text.includes("Article 106");
+
 const ok =
   t1.tools.includes("search_articles") && t1.tools.includes("get_article") && t1.outputs >= 2 && t1.text.includes("Article 24") &&
-  t2.tools.includes("save_note") && t2.outputs >= 1;
+  t2.tools.includes("save_note") && t2.outputs >= 1 &&
+  t3.tools.includes("find_questions") && t3.tools.includes("get_article") && t3.text.includes("Article 114") && namesUnread;
 console.log(ok ? "SMOKE OK" : "SMOKE FAILED");
 process.exit(ok ? 0 : 1);

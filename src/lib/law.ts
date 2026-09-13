@@ -87,6 +87,14 @@ export async function searchQuestions(query: string, limit = 3): Promise<Questio
   `);
 }
 
+/** The whole study question bank (lay question → articles), for the MCP resource and the starter prompts. */
+export async function listQuestions() {
+  return prisma.question.findMany({
+    orderBy: { id: "asc" },
+    select: { id: true, text: true, articles: true, tags: true },
+  });
+}
+
 export async function getArticle(number: number) {
   return prisma.article.findUnique({
     where: { number },
