@@ -1,5 +1,7 @@
 # Basic Law Study Agent
 
+[![ci](https://github.com/jensonChow/ordinance-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/jensonChow/ordinance-agent/actions/workflows/ci.yml)
+
 A small, complete AI application for studying the **Basic Law of the Hong Kong SAR**: an agent that looks the text up
 through **MCP tools**, quotes and cites articles, and keeps the learner's notes and every tool call in **PostgreSQL**.
 
