@@ -54,6 +54,10 @@ function Table({ split }: { split: Split }) {
 }
 
 export default async function EvalPage() {
+  // The hosted demo runs without the dense path (see the notice below), and the table is measured with it on.
+  // Saying so here is the whole point of having an evaluation page: the numbers must describe what is running.
+  const denseOff = process.env.DENSE_RETRIEVAL === "off";
+
   // Human relevance judgements collected in the app, next to the offline benchmark.
   const [ratingCount, ratingAvg, byValue, topRated] = await Promise.all([
     prisma.rating.count(),
@@ -88,6 +92,18 @@ export default async function EvalPage() {
           in the top k; <em>any@k</em> = any listed article is.
         </p>
       </header>
+
+      {denseOff ? (
+        <p className="mb-6 rounded-md border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+          <strong>This deployment is not running the dense path.</strong> Sentence embeddings are computed by a local
+          23 MB model loaded inside the server process; on serverless that cost lands on the first request after a
+          cold start, so <code className="mx-1 font-mono">DENSE_RETRIEVAL=off</code> is set here and retrieval
+          degrades to the study bank plus full-text search — the <em>question bank → smart FTS</em> row below,{" "}
+          <strong>80.0%</strong> primary@5 on test rather than 88.8%. The table is measured locally with the dense
+          path on; <code className="font-mono">npm run embed &amp;&amp; npm run eval:retrieval</code> on a clone
+          reproduces it without an API key.
+        </p>
+      ) : null}
 
       <section className="mb-8">
         <h2 className="mb-2 text-sm font-medium">Test split — the number to quote</h2>

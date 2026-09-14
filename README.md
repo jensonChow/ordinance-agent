@@ -2,6 +2,10 @@
 
 [![ci](https://github.com/jensonChow/ordinance-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/jensonChow/ordinance-agent/actions/workflows/ci.yml)
 
+**Live: [ordinance-agent.vercel.app](https://ordinance-agent.vercel.app)** — real corpus, real retrieval, real
+citation audit and ratings. No model key is configured there, so the assistant will not compose prose answers; it
+says so and shows what retrieval returned. See [Deploy](#deploy) for exactly what is and is not running.
+
 A small, complete AI application for studying the **Basic Law of the Hong Kong SAR**: an agent that looks the text up
 through **MCP tools**, quotes and cites articles, and keeps the learner's notes and every tool call in **PostgreSQL**.
 
@@ -219,6 +223,29 @@ rebuilds paragraphs and list items from the `-layout` text, separates page-botto
 that all 160 articles are present exactly once.
 
 ## Deploy
+
+### The hosted demo
+
+[ordinance-agent.vercel.app](https://ordinance-agent.vercel.app) runs this repository on Vercel (functions pinned to
+`sin1`) against Supabase PostgreSQL in `ap-southeast-1` — same region, because a turn makes several round trips to
+the database. What is running there, precisely:
+
+| | |
+|---|---|
+| Corpus | the real 160 articles, 3 annexes and 80 study questions, verified byte-identical to a local seed by SHA-256 over `Article.text`, `Article.searchText`, `Question.searchText` and `Annex.text` |
+| Retrieval | the question bank and full-text paths. **Not** the dense path: `DENSE_RETRIEVAL=off`, so live results are the 80.0% primary@5 pipeline, not the 88.8% one in the table above. `/eval` says so on the page |
+| Model | `MODEL_PROVIDER=mock`. For the questions the script covers you get a written answer; for anything else it runs the real search and then says it will not compose an answer, listing what retrieval returned |
+| Everything else | genuine: the MCP server at `/api/mcp`, the citation audit, the article panel, the 0-5 ratings and their aggregates on `/eval` |
+
+Two honest notes about how it was provisioned. The schema was applied through the Supabase API rather than
+`prisma migrate deploy`, because the machine doing the deploy could not open a raw PostgreSQL connection; the seed
+was loaded by having PostgreSQL fetch this repository's `data/*.json` over HTTPS, with `Article.searchText`
+reimplemented in SQL and checked against the TypeScript seed by checksum before anything else ran. And the database
+URL uses `uselibpqcompat=true&sslmode=require`, i.e. the connection is encrypted but the certificate is not
+verified, because the pooler's chain does not validate against the system roots; a deployment holding anything
+private should pin the provider's CA with `sslrootcert` instead.
+
+### Deploying it yourself
 
 - **Vercel**: import the repo; set `DATABASE_URL` (Neon, Supabase, Azure Database for PostgreSQL …) and the model
   variables; run `npx prisma migrate deploy && npm run db:seed` once against the production database. `/api/chat`

@@ -81,12 +81,31 @@ than from the job description alone; see the README section on what was borrowed
 | Keyless end-to-end | `MODEL_PROVIDER=mock npm run dev -- -p 3100`, `node scripts/smoke-chat.mjs http://127.0.0.1:3100` | `SMOKE OK` over **five** turns. Two are new: a broad question drives `suggest_topics → search_articles → get_article`, and the same question sent with `chapters: ["III"]` arrives at the search tool as `"chapters":["III"]` — the mock model reads the selection back out of the system prompt, so the assertion proves the narrowing survived the whole trip from chip row to tool call |
 | Browser, real clicks | Chrome against `localhost:3100` | Disclaimer banner renders; the nine chapter chips render under the composer; the broad question produces the answer plus a "Narrow to" row built from the `suggest_topics` result; the `Art. 27 qb·vec` chip opens a panel showing the matched study question ("Is freedom of speech protected in Hong Kong?"), the full article, a collapsible matched passage with its caveat, and the 0–5 rating row. Clicking `4` shows "saved"; `/eval` then reports "1 judgement, mean 4.00 out of 5" and "Art. 27 — 1 rating, mean 4.00". `/article/27` renders with its two study questions and prev/next links. No console errors |
 
+## 2026-09-14 (third session) — deployed to Vercel + Supabase
+
+| Step | Command / action | Result |
+|---|---|---|
+| Database | Supabase project `ordinance-agent`, `ap-southeast-1`, free tier | ACTIVE_HEALTHY. The project password is generated at creation and never shown again, and `ALTER USER postgres` is refused (`42501: permission denied to alter role`, Supabase treats it as privileged), so the app connects as a purpose-made role: `CREATE ROLE ordinance_app LOGIN`, `GRANT USAGE, CREATE ON SCHEMA public`, plus DML on the tables it owns nothing of |
+| Attack surface | `REVOKE ALL ON ALL TABLES/SEQUENCES IN SCHEMA public FROM anon, authenticated` | `information_schema.role_table_grants` then lists only `ordinance_app` (44), `postgres` (77) and `service_role` (77). Without this the tables would have been readable and writable through Supabase's public PostgREST endpoint, which this app does not use |
+| Schema | the six `prisma/migrations` files applied in order through the Supabase API | Applied as one migration. Not `prisma migrate deploy`: this machine cannot open a raw PostgreSQL connection (TCP connects, then the session hangs — the sandbox forwards HTTPS only), so `_prisma_migrations` is absent on the hosted database and a future `migrate deploy` there would need it seeded first |
+| Seed without shipping the data | `CREATE EXTENSION http`, then `http_get` on this repository's raw `data/basic-law.en.json` and `data/question-bank.json` | 9 chapters, 10 sections, 160 articles, 3 annexes, 80 questions; 93 articles carry a section id, matching local. The corpus is already public on GitHub, so the database fetches it directly instead of it being pushed through the deploy path |
+| `searchText` port | the four `BOILERPLATE` regexes from `prisma/seed.ts` reimplemented as nested `regexp_replace(... 'gi')` | **Byte-identical.** SHA-256 over `string_agg(searchText)` ordered by article: `ab2426d2…ba4a` on both. `Article.text` `f1b41355…a67b`, `Question.searchText` `748a2f3e…1b84d`, `Annex.text` `c212d1cd…62b8` — all four match the locally seeded database exactly |
+| TLS | first deploy failed: `P1011 Error opening a TLS connection: self-signed certificate in certificate chain` | `pg-connection-string` now treats `sslmode=require` as `verify-full`, and the pooler's chain does not validate against the system roots. Fixed with `uselibpqcompat=true&sslmode=require` — encrypted, certificate unverified. Recorded in the README as a real limitation, with `sslrootcert` named as what a deployment holding private data should do instead |
+| Pooler host | second deploy failed: `XX000 (ENOTFOUND) tenant/user ordinance_app.alpktfqbtpykhakaefoo not found` | Supavisor runs several clusters per region and the project is on `aws-0-ap-southeast-1`, not `aws-1`. DNS resolves both (they are different load balancers), and nothing in the Management API says which, so this was settled by deploying and reading the error |
+| Live pages, anonymous `curl` | `/`, `/article/27`, `/eval` | 200. The homepage renders `160 articles · 3 annexes · 80 study questions` from the live database; `/article/27` shows the article with the two study questions that lead to it; `/eval` renders both benchmark tables and the reader ratings |
+| Live MCP server | `tools/list`, then `search_articles {"chapters":["III"]}` | 7 tools listed. The filtered search returns only Chapter III (28, 29, 31) and carries `model_questions` — "Can the police search my home without lawful authority?" for Article 29 |
+| Live agent loop | two turns through `/api/chat` | Scripted question: `search_articles → get_article`, 6.0s cold. Unscripted question: real search, then the refusal-with-results text naming Articles 30, 27, 105, 119, 6 — 2.9s warm |
+| Live ratings | `POST /api/ratings` twice, then `/eval` | `200 {"ok":true}` both times; `/eval` then reports "2 judgements, mean 4.00 out of 5" with per-article breakdown. The whole loop — retrieve, cite, rate, aggregate — works against the hosted database |
+| Honesty check | `/eval` | The page carries a notice that this deployment runs with `DENSE_RETRIEVAL=off` and is therefore the 80.0% pipeline, not the 88.8% in the table it is showing. A benchmark page that describes something other than what is running would be worse than no page |
+
 ## Not verified
 
 - **Azure OpenAI**: the provider path (`@ai-sdk/azure`, `createAzure({ resourceName, apiKey })`, deployment as model id)
   compiles and is selected when `AZURE_*` are set, but no request has been made to an Azure resource yet.
 - **OpenAI-compatible fallback**: same — wired, not exercised against a live endpoint.
-- **Vercel deployment**: not deployed yet.
+- **Dense retrieval on the hosted demo**: switched off there (`DENSE_RETRIEVAL=off`) rather than measured. The
+  cold-start cost of loading the 23 MB model inside a serverless function has still not been timed; that is the
+  next thing to find out, and until it is, the live site runs the lexical pipeline.
 - **Docker image** for the Flask service: Dockerfile written, not built (no Docker on the build machine); the same
   `gunicorn` command was run directly in a venv on 2026-09-10. The endpoints added on 2026-09-13 (`GET /`, `POST /parse`)
   were exercised through Flask's test client, not through Gunicorn.
