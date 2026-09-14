@@ -145,3 +145,136 @@ model and a re-run of every number in `eval/RESULTS.md`.
 The first smoke run persisted the assistant message with an empty id (`responseMessage.id === ""`), so the second turn
 overwrote the first and its tool calls. Fix: `toUIMessageStreamResponse({ generateMessageId })` plus a server-side
 fallback id in `onFinish`. The rerun shows two distinct assistant rows with their own tool calls and citations.
+
+## 2026-09-14 — making the dense path deployable, and running the Apache config
+
+Everything in this section was run on the machine described at the top of this file. The Vercel measurements are of
+the **traced build output**, not of a live function; where that distinction matters it is said so.
+
+### Cold-start cost of the embedding model
+
+| Step | Command | Result |
+|---|---|---|
+| Where the cost actually is | `tsx` script: import `@huggingface/transformers`, `pipeline()`, first embed, second embed | import 224 ms · `pipeline()` 238 ms · first embed 8 ms · second embed 4 ms · **471 ms total**, RSS 418 MB. So the model load is not the problem — a *download* would be |
+| Model file sizes, as downloaded | `ls` on the transformers.js cache | `onnx/model.onnx` **90,387,606 B** (fp32, the default) and `onnx/model_quantized.onnx` **22,972,370 B** (q8). The README's earlier "23 MB model" described the file the code was **not** loading; corrected |
+| q8 first load, cold cache | `pipeline(..., { dtype: "q8" })` with nothing cached | 5,899 ms — almost all of it the 23 MB download |
+| q8 and fp32 once on local disk | same, repeated | q8 32–53 ms · fp32 45 ms. **Conclusion: bundle the file and the cold start is a local read, not a network fetch** |
+| Bundled, remote fetching refused | `EMBEDDING_LOCAL_ONLY=1 EMBEDDING_DTYPE=… ` against `models/` | fp32 452 ms / RSS 427 MB · q8 214 ms / RSS 318 MB (import + load + one embed, whole process) · `DENSE_RETRIEVAL=off` 0 ms, returns null |
+
+### Does quantisation cost accuracy?
+
+`npm run model:fetch -- --all`, then for each precision `npm run embed && npm run eval:retrieval` (the index must be
+rebuilt: the query and the index have to come from the same model).
+
+| test split, primary@5 | fp32 | q8 | Δ |
+|---|---|---|---|
+| dense (articles) | 86.2% | 87.5% | +1.2 |
+| hybrid RRF | 88.8% | 91.2% | +2.5 |
+| **dev** split, hybrid | 96.2% | 95.0% | −1.2 |
+
+At n=80 one question is 1.25 points, so these are one- and two-question movements that go in opposite directions on
+the two splits. Recorded as **"quantisation costs nothing measurable here"** — not as int8 retrieving better. fp32
+reproduced the previously published numbers exactly (88.8% test / 96.3% dev) when loaded from `models/` instead of
+the package cache, which also confirms the bundling changed no results.
+
+### Function size: the reason this was not simply switched on
+
+`npm run build`, then the traced file set of each route summed from `.next/server/app/**/*.nft.json`.
+
+| | before | after |
+|---|---|---|
+| `/api/mcp` (the route that runs retrieval) | 243.0 MB | **74.1 MB** |
+| `/api/chat` | 243.2 MB | 38.8 MB |
+| every page route | ~242.9 MB | ~38.5 MB |
+
+Against Vercel's 250 MB unzipped limit the original trace had 7 MB of headroom. What it was spending it on:
+
+- **114 MB of the development machine's own model cache** (`node_modules/@huggingface/transformers/.cache/**`),
+  traced in only because this repo had been run before the build. Excluded.
+- **the 90 MB fp32 graph** sitting next to the q8 one in `models/`. Excluded; the include list names files, not the
+  directory, so the wrong precision cannot be dragged along.
+- `onnxruntime-web` (130 MB of WASM the Node backend never loads) and `sharp`, an image dependency of
+  @huggingface/transformers that a text pipeline has no use for. Excluded.
+
+**And a bug this measurement found.** `onnxruntime-node` contributed **0 bytes** of native code to the traced set:
+the tracer follows the package's JavaScript but not the runtime `require` of
+`bin/napi-v6/<platform>/<arch>/onnxruntime_binding.node`. Shipped that way, the function loads the JS, fails to load
+the binding, and `src/lib/embeddings.ts` catches it and returns null — so retrieval would have degraded to lexical
+**silently**, on a deployment whose own `/eval` page would still have claimed the vector pipeline. Fixed by naming
+`bin/napi-v6/linux/x64/*` in `outputFileTracingIncludes`; the traced set then contains `libonnxruntime.so.1`
+(35.16 MB) and `onnxruntime_binding.node` (0.38 MB). **Not yet confirmed on a live Vercel function** — this is a
+measurement of the build output.
+
+### Reporting a degraded pipeline instead of absorbing it
+
+| Step | Command | Result |
+|---|---|---|
+| Retrieval reports its own paths | `searchArticlesHybridReported` on the seeded corpus | `{questionBank: true, fullText: true, dense: true}`; hits carry `semantic` among `found_by` |
+| …and reports the dense path as absent | same with `DENSE_RETRIEVAL=off` (fresh module; the pipeline is memoised) | `dense: false`, and hits still returned — degrades rather than failing. Covered by `npm test` |
+| The interface shows the difference | browser, app started with `DENSE_RETRIEVAL=off`, question routed through `search_articles` | the `vec` lane renders `data-lane="down"` with `text-decoration: line-through` and a dashed border, title "這條路沒有在跑…"; `qb` and `fts` render `on`. With the dense path up, `vec` is `off` when it simply lost |
+| `/eval` says what it is describing | both servers | dense on: "向量索引 `Xenova/all-MiniLM-L6-v2@q8 dims=384 articles=160 questions=80` · 建於 2026-09-14 —— 與本進程載入的模型相符". Dense off: the notice quotes **80.0%** against the table's **91.3%** — both numbers now read out of `eval/retrieval-results.json` rather than typed into the page, which is what let them be wrong before |
+| Index provenance detects the mismatch | `npm test` (stubs `EMBEDDING_DTYPE` to the other precision) | `indexStatus()` → `mismatch`, `running` ≠ `built` |
+
+**A rejected approach, because the numbers rejected it.** The first design detected a mismatched index without
+storing anything: re-embed a row whose vector is already in the database and compare. Measured against a q8 index —
+
+| query precision | cosine to the stored vector (question qb-001 / article 1) |
+|---|---|
+| q8 — *the same model that built the index* | 0.998906 / 0.996750 |
+| fp32 — a different precision | 0.996713 / 0.994080 |
+
+The same model does not reproduce itself: `npm run embed` embeds in batches of 32 and padding to the longest text in
+each batch perturbs the result more than the quantisation does. Two thousandths of cosine is not a threshold to
+hang a correctness check on, so the check became an explicit `IndexMeta` row (one migration, `index_meta`).
+
+### Apache: the example vhost, actually executed
+
+`deploy/apache/local-check.sh` — Apache 2.4.67 (macOS system httpd) on port 8080, unprivileged, against a TLS-less
+copy of `basic-law.conf`; app on 3100, Gunicorn on 8000.
+
+| Check | Result |
+|---|---|
+| `httpd -t` | Syntax OK |
+| `/`, `/eval`, `/article/27` through the proxy | 307 (the conversation redirect), 200, 200 — each carrying the app's own markup |
+| `POST /api/mcp tools/list` through the proxy | 7 tools |
+| `/citations/healthz`, `/citations/parse` | reach Gunicorn with the prefix rewritten away; `parse` returns `count=4` for "see arts 45 to 47 and art 24(2)" |
+| `/api/chat` streaming, direct | chunks at 21, 39, 44 ms — first byte at 0.48 of the total |
+| `/api/chat` streaming, through Apache | chunks at 19, 37, 42 ms — 0.45, `via: Apache/2.4.67 (Unix)`. **Not buffered** |
+
+Three things had to be got right to run it at all, all now in the committed config: `DefaultRuntimeDir` and
+`Mutex file:` inside the run directory (otherwise a non-root httpd dies on "Couldn't create the proxy mutex"); the
+config copied out of the repository before starting (the system httpd's sandbox returns "Operation not permitted"
+for a config on this volume, though the shell reads it fine); and `<IfModule !…>` guards around every `LoadModule`
+so the same file loads on Debian, where some of those modules are compiled in.
+
+**A false alarm worth recording.** The first version of `scripts/stream-timing.mjs` grouped arrivals within 40 ms
+and called a single group "buffered". It reported the proxy as buffering — and it was wrong: against the scripted
+model a whole answer completes in ~50 ms, so on a warm server the *direct* request looked identical (arrivals
+`[34]`, `[18]`). The measure was replaced by the scale-free one (first chunk as a fraction of the last), which
+separates the cases at any speed.
+
+**And a claim the measurement removed.** With the `<Location "/api/chat">` block deleted — no `flushpackets=on` —
+the stream was *still* incremental through the proxy (ratios 0.51 and 0.44 over two runs). On 2.4.67
+`mod_proxy_http` forwards as it reads. The directive stays as an explicit guarantee, but the README no longer
+suggests it is what makes streaming work.
+
+### Repaired along the way
+
+- `services/citation-py/.venv` had been broken since the folder moved on 2026-09-13: its console scripts still had
+  `#!/Volumes/APFS/Repos/ordinance-agent/...` shebangs, so `launch.json`'s `citation-py` configuration could not
+  have started. Rebuilt (Flask 3.1.3, Gunicorn 23.0.0). The earlier note that "the preview sandbox will not execute
+  programs inside `.venv`" is *also* true and is the reason the service was started from a shell here: the sandbox
+  denies reading that directory at all (`PermissionError` on the site-packages path).
+- The CI cache for the model pointed at `~/.cache/huggingface`, which transformers.js never writes, so every CI run
+  re-downloaded the weights. It now caches `models/` and runs `npm run model:fetch`, with `EMBEDDING_LOCAL_ONLY=1`
+  on the embed and eval steps so CI exercises the same bundled path as the deployment.
+
+### Not verified
+
+- **The live Vercel function with `DENSE_RETRIEVAL` on.** Everything above about the function is measured from the
+  traced build, and the deployment at ordinance-agent.vercel.app still runs with the dense path off until it is
+  redeployed. Until then: whether the linux binding loads there, and what the first request after a cold start
+  actually costs, are open.
+- The CI Apache step has not run on Debian yet — it is new in this commit.
+- `deploy/systemd/citation-py.service` is still an unexercised example.
+- Real model provider (Azure or OpenAI-compatible), Docker build: unchanged, still not run.

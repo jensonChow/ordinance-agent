@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { indexStatus } from "@/lib/index-meta";
 import { prisma } from "@/lib/prisma";
 import results from "../../../eval/retrieval-results.json";
 
@@ -9,6 +10,16 @@ type Split = "dev" | "test" | "all";
 
 const COLUMNS = ["primary@1", "primary@3", "primary@5", "any@1", "any@3", "any@5"];
 const FUSED = "hybrid RRF (bank ×2 + FTS + dense)";
+const LEXICAL = "question bank → smart FTS"; // what retrieval falls back to when the dense path is off
+const DENSE = "dense (articles)";
+
+/**
+ * Every figure in the prose below is read out of the evaluation's own JSON rather than typed in. An evaluation page
+ * whose commentary has drifted from its own table is worse than no commentary — and the numbers do move: they
+ * changed when the deployment switched to the quantised model.
+ */
+const score = (strategy: string, split: Split, metric = "primary@5") =>
+  (results.results as Record<string, Record<Split, Metrics>>)[strategy]?.[split]?.[metric];
 
 const mono = { font: "400 10.5px/1.4 'Geist Mono', ui-monospace, monospace", letterSpacing: ".06em" } as const;
 const sans = (size: number, weight = 400, lh = 1.75) =>
@@ -59,8 +70,10 @@ function Table({ split }: { split: Split }) {
 }
 
 export default async function EvalPage() {
-  // The hosted demo runs without the dense path (see the notice below), and the table is measured with it on.
-  // Saying so here is the whole point of having an evaluation page: the numbers must describe what is running.
+  // The whole point of an evaluation page is that the numbers describe what is running. This page cannot observe the
+  // retrieval process directly (it is a different function), so it reports the configuration and the index stamp, and
+  // each search reports its own live paths where the reader can see them.
+  const index = await indexStatus();
   const denseOff = process.env.DENSE_RETRIEVAL === "off";
 
   const [ratingCount, ratingAvg, byValue, topRated] = await Promise.all([
@@ -109,19 +122,51 @@ export default async function EvalPage() {
             margin: "16px 0",
           }}
         >
-          <strong>這個部署沒有跑向量檢索。</strong> 句向量由一個 23 MB 的本地模型在伺服器行程內載入；在 serverless 上這筆成本會落在冷啟動後的第一個請求，
-          所以這裡設了 <code style={mono}>DENSE_RETRIEVAL=off</code>，檢索退回「題庫 + 全文檢索」——也就是下表的{" "}
-          <em>question bank → smart FTS</em> 那一行，test 集 primary@5 為 <strong>80.0%</strong>，不是 88.8%。
-          表中數字是本機開著向量路測的；把倉庫克隆下來跑 <code style={mono}>npm run embed &amp;&amp; npm run eval:retrieval</code> 即可復現，不需要任何 key。
+          <strong>這個部署沒有跑向量檢索。</strong> 這裡設了 <code style={mono}>DENSE_RETRIEVAL=off</code>，檢索退回「題庫 + 全文檢索」——也就是下表的{" "}
+          <em>question bank → smart FTS</em> 那一行，test 集 primary@5 為 <strong>{pct(score(LEXICAL, "test"))}</strong>，不是{" "}
+          {pct(score(FUSED, "test"))}。表中數字是開著向量路測的；把倉庫克隆下來跑{" "}
+          <code style={mono}>npm run embed &amp;&amp; npm run eval:retrieval</code> 即可復現，不需要任何 key。
         </p>
       ) : null}
+
+      {index.state === "ok" ? (
+        <p style={{ ...mono, color: "var(--ink4)", margin: "12px 0 0" }}>
+          向量索引 <span lang="en">{index.built}</span>
+          {index.builtAt ? ` · 建於 ${index.builtAt.toISOString().slice(0, 10)}` : ""} —— 與本進程載入的模型相符
+        </p>
+      ) : index.state === "off" ? null : (
+        <p
+          style={{
+            ...sans(11.5),
+            color: "var(--seal)",
+            background: "var(--sealbg)",
+            borderLeft: "3px solid var(--seal)",
+            padding: "10px 13px",
+            margin: "16px 0",
+          }}
+        >
+          <strong>{index.state === "missing" ? "資料庫裡沒有向量索引。" : "向量索引與本進程的模型不符。"}</strong>{" "}
+          {index.state === "missing" ? (
+            <>
+              向量那兩條路會回傳空集，檢索退回「題庫 + 全文檢索」。跑 <code style={mono}>npm run embed</code> 建索引。
+            </>
+          ) : (
+            <>
+              索引由 <span lang="en">{index.built}</span> 建，本進程載入的是 <span lang="en">{index.running}</span>。
+              兩者的向量不在同一個空間裡，點積仍然算得出數字、仍然回五條條文，只是更差的五條——所以這裡寧可說出來。重跑{" "}
+              <code style={mono}>npm run embed</code> 即可對齊。
+            </>
+          )}
+        </p>
+      )}
 
       <section style={{ marginTop: 22 }}>
         <h2 style={{ ...serif(14), margin: "0 0 8px" }}>test 集 —— 對外只引這一組</h2>
         <Table split="test" />
         <p style={{ ...sans(11), color: "var(--ink4)", marginTop: 8 }}>
-          兩點值得留意。純向量檢索（86.3% primary@5）勝過整套手寫題庫加調過參的詞法管線（80.0%）—— 一個 23 MB、從沒見過這套語料的模型，贏過那些調參。
-          而四條路融合起來，又比其中任何一條都好。
+          兩點值得留意。純向量檢索（{pct(score(DENSE, "test"))} primary@5）勝過整套手寫題庫加調過參的詞法管線（
+          {pct(score(LEXICAL, "test"))}）—— 一個 23 MB、從沒見過這套語料的模型，贏過那些調參。而四條路融合起來（
+          {pct(score(FUSED, "test"))}），又比其中任何一條都好。
         </p>
       </section>
 
@@ -129,7 +174,9 @@ export default async function EvalPage() {
         <h2 style={{ ...serif(14), margin: "0 0 8px" }}>dev 集 —— 調參用的，照實列出</h2>
         <Table split="dev" />
         <p style={{ ...sans(11), color: "var(--ink4)", marginTop: 8 }}>
-          dev 與 test 的差距就是過擬合的大小。融合策略在 primary@5 上差 7.5 分；此前那套在 dev 上調出來的詞法管線差 15.0 分。
+          dev 與 test 的差距就是過擬合的大小。融合策略在 primary@5 上差{" "}
+          {(100 * ((score(FUSED, "dev") ?? 0) - (score(FUSED, "test") ?? 0))).toFixed(1)} 分；此前那套在 dev 上調出來的詞法管線差{" "}
+          {(100 * ((score(LEXICAL, "dev") ?? 0) - (score(LEXICAL, "test") ?? 0))).toFixed(1)} 分。
         </p>
       </section>
 

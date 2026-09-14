@@ -28,7 +28,21 @@ export type ShellData = {
   conversations: { id: string; label: string; count: number }[];
   counts: { articles: number; questions: number; annexes: number; toolCalls: number; ratings: number };
   quiz: { id: string; text: string; answer: number; options: { n: number; preview: string }[] }[];
-  denseOff: boolean;
+  /**
+   * State of the dense (vector) retrieval path, measured server-side. The two percentages are read from the
+   * evaluation's own JSON and passed in rather than written into this file, so a notice about what is running can
+   * never quote a number the benchmark no longer produces.
+   */
+  dense: {
+    /**
+     * How this deployment is *configured*. Deliberately not "is the model loaded": retrieval runs in another
+     * serverless function, and each search reports its own live paths (`paths_run`, and the `vec` label on a hit).
+     */
+    enabled: boolean;
+    withVectors: string;
+    withoutVectors: string;
+    index: string | null;
+  };
 };
 
 type ArticleView = {
@@ -78,9 +92,16 @@ type Stage = { label: string; done: boolean };
  * The retrieval trace, derived from the tool calls the agent actually made in this turn — not a scripted
  * animation. Each stage lights when its tool has been called, so what the reader watches is the real pipeline.
  */
-function traceStages(message: UIMessage | undefined, busy: boolean): { stages: Stage[]; lanes: Record<string, boolean> } {
+/**
+ * `on` contributed a hit · `off` ran and returned nothing that survived fusion · `down` was not running at all.
+ * Keeping `down` separate is the point: a greyed-out `vec` that means "the model is not loaded here" and one that
+ * means "vectors lost to full-text on this question" are different facts about the answer above it.
+ */
+type LaneState = "on" | "off" | "down";
+
+function traceStages(message: UIMessage | undefined, busy: boolean): { stages: Stage[]; lanes: Record<string, LaneState> } {
   const called = new Set<string>();
-  const lanes: Record<string, boolean> = { qb: false, fts: false, vec: false };
+  const lanes: Record<string, LaneState> = { qb: "off", fts: "off", vec: "off" };
   for (const part of message?.parts ?? []) {
     if (!isToolUIPart(part)) continue;
     const p = part as unknown as { state: string; output?: unknown };
@@ -88,21 +109,26 @@ function traceStages(message: UIMessage | undefined, busy: boolean): { stages: S
     called.add(name);
     if (p.state !== "output-available") continue;
     if (name === "search_articles") {
-      const out = unwrapToolOutput(p.output) as { hits?: { found_by?: string[] }[] } | undefined;
+      const out = unwrapToolOutput(p.output) as
+        | { hits?: { found_by?: string[] }[]; paths_run?: string[]; dense_path?: string }
+        | undefined;
+      // The tool says which of its paths were live; older outputs (before it reported that) have no such field, and
+      // are left to the per-hit evidence rather than being reported as a path that was down.
+      if (out?.paths_run && !out.paths_run.includes("dense")) lanes.vec = "down";
       for (const h of out?.hits ?? []) {
         for (const f of h.found_by ?? []) {
-          if (f.includes("question bank")) lanes.qb = true;
-          if (f.startsWith("full-text")) lanes.fts = true;
-          if (f.startsWith("semantic")) lanes.vec = true;
+          if (f.includes("question bank")) lanes.qb = "on";
+          if (f.startsWith("full-text")) lanes.fts = "on";
+          if (f.startsWith("semantic")) lanes.vec = "on";
         }
       }
     }
-    if (name === "find_questions") lanes.qb = true;
+    if (name === "find_questions") lanes.qb = "on";
   }
   const stages: Stage[] = [
     { label: "收到提問，準備檢索", done: true },
     { label: "推斷相關章節", done: called.has("suggest_topics") },
-    { label: "比對 80 道學習題", done: called.has("find_questions") || lanes.qb },
+    { label: "比對 80 道學習題", done: called.has("find_questions") || lanes.qb === "on" },
     { label: "全文檢索與倒數排名融合", done: called.has("search_articles") },
     { label: "讀取命中條文全文", done: called.has("get_article") || called.has("get_articles") },
   ];
@@ -457,7 +483,7 @@ export function Shell(data: ShellData) {
           {mode === "read" ? <ReadMode article={article} focus={focus} onOpen={open} chapters={data.chapters} /> : null}
           {mode === "quiz" ? <QuizMode quiz={data.quiz} onOpen={open} /> : null}
           {mode === "notes" ? <NotesMode notes={data.notes} conversations={data.conversations} current={data.conversationId} /> : null}
-          {mode === "eval" ? <EvalMode denseOff={data.denseOff} counts={data.counts} /> : null}
+          {mode === "eval" ? <EvalMode dense={data.dense} counts={data.counts} /> : null}
         </main>
 
         {rightDefault ? (
@@ -477,7 +503,7 @@ export function Shell(data: ShellData) {
               />
             ) : null}
             {mode === "quiz" ? <MasteryRail counts={data.counts} /> : null}
-            {mode === "eval" ? <DeployRail denseOff={data.denseOff} /> : null}
+            {mode === "eval" ? <DeployRail dense={data.dense} /> : null}
             {mode === "read" || mode === "notes" ? (
               <p style={{ ...sans(11.5, 400, 1.7), color: "var(--ink3)" }}>
                 切換到「問答」後，這一欄會顯示每個答案讀過哪些條文、經由哪條檢索路徑找到。
@@ -763,7 +789,7 @@ function Turn({
 
 function EvidenceRail(props: {
   message: UIMessage | undefined;
-  lanes: Record<string, boolean>;
+  lanes: Record<string, LaneState>;
   hover: number | null;
   setHover: (n: number | null) => void;
   onOpen: (f: { number: number; messageId: string | null; provenance?: ArticleProvenance }) => void;
@@ -791,15 +817,31 @@ function EvidenceRail(props: {
   return (
     <div>
       <div style={{ display: "flex", gap: 5, marginBottom: 10 }}>
-        {(["qb", "fts", "vec"] as const).map((k) => (
-          <span
-            key={k}
-            data-lane={props.lanes[k] ? "on" : "off"}
-            style={{ ...mono(9.5), padding: "2px 7px", border: "1px solid var(--rule2)", color: "var(--ink2)" }}
-          >
-            {k}
-          </span>
-        ))}
+        {(["qb", "fts", "vec"] as const).map((k) => {
+          const state = props.lanes[k];
+          return (
+            <span
+              key={k}
+              data-lane={state}
+              title={
+                state === "down"
+                  ? "這條路沒有在跑：檢索工具回報本次沒有向量路徑，結果只來自題庫與全文檢索"
+                  : state === "on"
+                    ? "這條路貢獻了至少一條命中"
+                    : "這條路跑了，但沒有結果進入融合後的前幾名"
+              }
+              style={{
+                ...mono(9.5),
+                padding: "2px 7px",
+                border: "1px solid var(--rule2)",
+                color: "var(--ink2)",
+                textDecoration: state === "down" ? "line-through" : "none",
+              }}
+            >
+              {k}
+            </span>
+          );
+        })}
       </div>
 
       <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
@@ -1190,7 +1232,7 @@ function NotesMode({
   );
 }
 
-function EvalMode({ denseOff, counts }: { denseOff: boolean; counts: ShellData["counts"] }) {
+function EvalMode({ dense, counts }: { dense: ShellData["dense"]; counts: ShellData["counts"] }) {
   return (
     <div style={{ background: "var(--sheet)", border: "1px solid var(--rule)", padding: "18px 22px" }}>
       <SectionHeading zh="評測" en="eval" />
@@ -1204,12 +1246,12 @@ function EvalMode({ denseOff, counts }: { denseOff: boolean; counts: ShellData["
       >
         打開評測頁 →
       </a>
-      {denseOff ? (
+      {dense.enabled ? null : (
         <p style={{ ...sans(11.5, 400, 1.7), color: "var(--seal)", background: "var(--sealbg)", border: "1px solid var(--sealrule)", padding: "9px 11px", marginTop: 14 }}>
-          這個部署關閉了向量檢索（<code style={mono(10)}>DENSE_RETRIEVAL=off</code>）：句向量模型要在函式內載入，serverless 冷啟動的代價還沒實測。
-          所以線上跑的是「題庫 + 全文檢索」那條管線，test 集 primary@5 為 <strong>80.0%</strong>，不是表裡的 88.8%。
+          這個部署關閉了向量檢索（<code style={mono(10)}>DENSE_RETRIEVAL=off</code>），跑的是「題庫 + 全文檢索」那條管線，
+          test 集 primary@5 為 <strong>{dense.withoutVectors}</strong>，不是表裡的 {dense.withVectors}。
         </p>
-      ) : null}
+      )}
       <Rule />
       <p style={{ ...sans(11, 400, 1.7), color: "var(--ink4)" }}>
         語料 {counts.articles} 條 · {counts.questions} 學習題 · 讀者評分 {counts.ratings} 條 · 本對話工具調用 {counts.toolCalls} 次
@@ -1218,7 +1260,7 @@ function EvalMode({ denseOff, counts }: { denseOff: boolean; counts: ShellData["
   );
 }
 
-function DeployRail({ denseOff }: { denseOff: boolean }) {
+function DeployRail({ dense }: { dense: ShellData["dense"] }) {
   return (
     <div style={{ ...sans(11.5, 400, 1.75), color: "var(--ink3)" }}>
       <p style={{ marginTop: 0 }}>
@@ -1227,7 +1269,21 @@ function DeployRail({ denseOff }: { denseOff: boolean }) {
       <Rule />
       <p>MCP 服務端在 <code style={mono(10)}>/api/mcp</code>，七個工具，任何 MCP 客戶端可直接連。</p>
       <Rule />
-      <p>{denseOff ? "向量檢索：關閉（冷啟動成本未實測）" : "向量檢索：開啟"}</p>
+      <p>
+        {dense.enabled ? (
+          <>
+            向量檢索：已啟用 —— 模型隨部署打包（<code style={mono(10)}>models/</code>），請求路徑上不向 huggingface.co 取任何檔案
+            {dense.index ? (
+              <>
+                。索引 <span lang="en">{dense.index}</span>
+              </>
+            ) : null}
+            。這一行只說配置；某一次檢索到底有沒有跑向量，看那次結果上的 <code style={mono(10)}>vec</code> 標籤 —— 檢索工具每次都會回報哪幾條路是活的。
+          </>
+        ) : (
+          "向量檢索：關閉"
+        )}
+      </p>
     </div>
   );
 }

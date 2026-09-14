@@ -55,3 +55,7 @@ __pycache__/
 
 # editor/session config
 .claude/
+
+# Sentence-embedding model, fetched by `npm run model:fetch` (prebuild). Not committed: it is 23-90 MB of weights
+# that the build can always re-fetch, and bundling it into the deployment is the build step, not the repository.
+models/

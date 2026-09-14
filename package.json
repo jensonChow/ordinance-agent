@@ -16,7 +16,9 @@
     "eval:retrieval": "tsx scripts/eval-retrieval.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "embed": "tsx scripts/embed-corpus.ts"
+    "embed": "tsx scripts/embed-corpus.ts",
+    "model:fetch": "tsx scripts/fetch-model.ts",
+    "prebuild": "npm run model:fetch"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.68",

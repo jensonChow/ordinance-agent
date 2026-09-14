@@ -158,12 +158,24 @@ function fuse(lists: { source: RetrievalSource; articles: number[] }[], limit: n
     .map(([n]) => ({ number: n, sources: ORDER.filter((s) => sources.get(n)!.has(s)) }));
 }
 
+/** Which retrieval paths were actually available for one search — see searchArticlesHybridReported. */
+export type RetrievalPaths = { questionBank: boolean; fullText: boolean; dense: boolean };
+
 /**
  * The retrieval the agent actually uses: the question bank (lexical and dense), full-text search and dense
  * article search, fused by reciprocal rank. Each component degrades to [] on its own, so the fusion still works
  * when the embedding model is missing — it is then exactly the previous bank + full-text behaviour.
+ *
+ * The degradation is the reason this returns the paths as well as the hits. "No `vec` among the results" has two
+ * very different causes — the dense path ran and lost, or the dense path never ran — and a tool whose answer is
+ * cited in legal study should not leave the caller to guess which. `found_by` on a hit says who found it; this
+ * says who was even asked.
  */
-export async function searchArticlesHybrid(query: string, limit = 5, chapters?: string[]): Promise<ArticleHit[]> {
+export async function searchArticlesHybridReported(
+  query: string,
+  limit = 5,
+  chapters?: string[],
+): Promise<{ hits: ArticleHit[]; paths: RetrievalPaths }> {
   const vector = await embedOne(query); // embed once; both dense lookups reuse it
   // The question bank is not chapter-scoped, so a reader's topic selection is applied to the articles it maps to
   // rather than to the SQL; the article-level paths take the same selection as a WHERE clause.
@@ -221,12 +233,18 @@ export async function searchArticlesHybrid(query: string, limit = 5, chapters?: 
       });
     }
   }
-  return order.flatMap((n) => {
+  const hits = order.flatMap((n) => {
     const hit = known.get(n);
     if (!hit) return [];
     const via = viaQuestions.get(n);
     return [{ ...hit, mode: "hybrid" as const, sources: sourcesByArticle.get(n) ?? [], ...(via?.length ? { viaQuestions: via } : {}) }];
   });
+  return { hits, paths: { questionBank: true, fullText: true, dense: vector !== null } };
+}
+
+/** Hits only, for callers that do not report on the retrieval itself (the evaluation, the tests). */
+export async function searchArticlesHybrid(query: string, limit = 5, chapters?: string[]): Promise<ArticleHit[]> {
+  return (await searchArticlesHybridReported(query, limit, chapters)).hits;
 }
 
 export type TopicSuggestion = { chapter: string; title: string; score: number; articles: number[] };

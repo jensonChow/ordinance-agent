@@ -1,6 +1,6 @@
 /* Integration tests against a seeded PostgreSQL (DATABASE_URL). Skipped when the database is not configured. */
 import "dotenv/config";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 const hasDb = Boolean(process.env.DATABASE_URL);
 
@@ -87,5 +87,53 @@ describe.skipIf(!hasDb)("topic narrowing", () => {
     const hits = await searchArticlesHybrid("Do I pay customs duty on goods I bring into Hong Kong?", 5);
     const hit = hits.find((h) => h.number === 114);
     expect(hit?.viaQuestions?.length ?? 0).toBeGreaterThan(0);
+  });
+});
+
+/* What the retrieval layer says about itself. These are the checks that keep a degraded deployment from looking
+ * like a healthy one: the dense path is optional, so every consumer has to be able to tell that it was skipped. */
+describe.skipIf(!hasDb)("retrieval self-report", () => {
+  it("names the paths that were live, not just the ones that won", async () => {
+    const { searchArticlesHybridReported } = await import("@/lib/law");
+    const { paths, hits } = await searchArticlesHybridReported("Do I pay customs duty on goods I bring in?", 5);
+    expect(paths.questionBank).toBe(true);
+    expect(paths.fullText).toBe(true);
+    expect(hits.length).toBeGreaterThan(0);
+    // dense depends on the environment having an embedded corpus; the field must exist and be a boolean either way.
+    expect(typeof paths.dense).toBe("boolean");
+  });
+
+  it("reports the dense path as not run when it is switched off, and still returns hits", async () => {
+    vi.stubEnv("DENSE_RETRIEVAL", "off");
+    vi.resetModules(); // the embedding loader memoises its pipeline, so the flag has to be read by a fresh module
+    try {
+      const { searchArticlesHybridReported } = await import("@/lib/law");
+      const { paths, hits } = await searchArticlesHybridReported("permanent resident seven years", 5);
+      expect(paths.dense).toBe(false);
+      expect(hits.length).toBeGreaterThan(0); // degrades to lexical rather than failing
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
+  });
+
+  it("stamps the index with the model that built it, and flags a model that did not", async () => {
+    const { indexStatus, runningStamp } = await import("@/lib/index-meta");
+    const status = await indexStatus();
+    if (status.state === "missing") return; // `npm run embed` has not been run in this environment
+    expect(status.state).toBe("ok");
+    expect(status.built?.startsWith(runningStamp())).toBe(true);
+
+    vi.stubEnv("EMBEDDING_DTYPE", status.running.endsWith("q8") ? "fp32" : "q8");
+    vi.resetModules();
+    try {
+      const other = await import("@/lib/index-meta");
+      const mismatch = await other.indexStatus();
+      expect(mismatch.state).toBe("mismatch");
+      expect(mismatch.running).not.toBe(mismatch.built);
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
   });
 });

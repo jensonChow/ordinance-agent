@@ -96,11 +96,20 @@ Three cheap, transparent paths are combined instead:
 2. **A study question bank** — 80 hand-written lay questions mapped to the articles that answer them, searchable
    lexically and by vector.
 3. **Sentence embeddings** — all 160 articles and the 80 canonical questions are embedded locally with
-   `all-MiniLM-L6-v2` (384 dims, `npm run embed`) and stored in a `Float[]` column; similarity is a dot product of
-   L2-normalised vectors computed in SQL.
+   `all-MiniLM-L6-v2` (384 dims, int8, `npm run embed`) and stored in a `Float[]` column; similarity is a dot
+   product of L2-normalised vectors computed in SQL. The model file is fetched into `models/` at build time
+   (`npm run model:fetch`) and bundled into the deployment, so no request ever waits on huggingface.co.
 
 The three are merged by **reciprocal rank fusion** (k = 60, not tuned). Each hit carries `found_by`, so an answer's
-citations say which path produced them.
+citations say which path produced them — and the result as a whole carries `paths_run`, because "no `vec` among the
+hits" has two different meanings and a citation trail should not make the reader guess between them:
+
+| | what it means |
+|---|---|
+| `paths_run` includes `dense`, no hit says `semantic` | vectors ran and lost to the other paths on this question |
+| `paths_run` omits `dense` | vectors were not running at all — the model is absent or switched off, and these results are lexical only |
+
+The interface shows the difference: the `vec` lane is faint in the first case and struck through in the second.
 
 ### Evaluation
 
@@ -116,22 +125,35 @@ article is in the top-k (full tables in [eval/RESULTS.md](eval/RESULTS.md)):
 | smart FTS (strict→loose) | 52.5% | 62.5% | 67.5% | 78.8% |
 | question bank (lexical) | 55.0% | 68.8% | 72.5% | 72.5% |
 | question bank → smart FTS | 55.0% | 71.3% | 80.0% | 85.0% |
-| dense (articles) | 58.8% | 82.5% | 86.3% | **93.8%** |
-| dense (question bank) | 56.3% | 68.8% | 73.8% | 73.8% |
-| **hybrid RRF (bank ×2 + FTS + dense)** | **63.7%** | **82.5%** | **88.8%** | 92.5% |
+| dense (articles) | 60.0% | 82.5% | 87.5% | **93.8%** |
+| dense (question bank) | 55.0% | 68.8% | 75.0% | 75.0% |
+| **hybrid RRF (bank ×2 + FTS + dense)** | **63.7%** | **85.0%** | **91.3%** | 93.8% |
 
 Two results worth stating plainly rather than burying:
 
-- **Dense retrieval alone beats the entire hand-built pipeline on held-out queries** — 86.3% against 80.0%
+- **Dense retrieval alone beats the entire hand-built pipeline on held-out queries** — 87.5% against 80.0%
   primary@5 — despite the question bank being 80 questions written by hand and the lexical layer having been
   tuned. A 23 MB model that was never shown this corpus does better than the tuning.
 - **The tuning had overfit the dev set, and the fusion narrows that.** On dev the old pipeline scored 95.0% but only
-  80.0% on test, a 15-point gap. Hybrid scores 96.3% dev / 88.8% test, a 7.5-point gap. The dev number barely moved;
+  80.0% on test, a 15-point gap. Hybrid scores 95.0% dev / 91.3% test, a 3.7-point gap. The dev number barely moved;
   the honest number moved a lot.
+- **Quantising the model cost nothing measurable.** The table is measured at int8 (`q8`, 23 MB). At fp32 (90 MB) the
+  same fusion reads 88.8% test / 96.2% dev — test up 2.5 points at q8, dev down 1.2. Both swings are one to two
+  questions out of 80, so the right conclusion is that the precision does not matter here, **not** that int8
+  retrieves better. It was chosen for a different reason: 23 MB against 90 MB, and roughly half the load time, is
+  what makes the dense path affordable inside a serverless function. `EMBEDDING_DTYPE=fp32` switches back (then
+  `npm run embed` again — see below).
 
 The numbers are retrieval only — whether the *article* is found — not answer quality; the agent still reads the
 article with `get_article` and quotes it. The remaining test misses are mostly questions whose primary article is
-one of several plausible ones (`any@5` is 92.5%).
+one of several plausible ones (`any@5` is 93.8%).
+
+**The index records which model built it.** A query embedded by one model and scored against an index built by
+another still returns five articles — plausible ones, worse ones — with nothing thrown and nothing logged. So
+`npm run embed` writes the model and precision into an `IndexMeta` row, and `/eval` compares that against what the
+process is running and says so when they differ. The cheaper check was tried first and does not work: re-embedding
+a stored row and comparing cannot separate the cases, because batching perturbs a vector more than quantisation
+does (0.9989 self-similarity against 0.9967 across precisions — [VERIFICATION.md](VERIFICATION.md)).
 
 ## What this borrows from the AI CLIC Recommender
 
@@ -167,9 +189,18 @@ npm install                              # also runs `prisma generate`
 cp .env.example .env                     # set DATABASE_URL and a model provider
 npm run db:migrate                       # creates tables + the full-text index
 npm run db:seed                          # loads data/basic-law.en.json (160 articles, 3 annexes) and data/question-bank.json (80 questions)
-npm run embed                            # 384-dim sentence embeddings, computed locally — no API key
+npm run model:fetch                      # 23 MB sentence-embedding model into models/ (also runs as `prebuild`)
+npm run embed                            # 384-dim embeddings for 160 articles + 80 questions — no API key, ~15 s
 npm run dev
 ```
+
+Dense retrieval knobs, all optional:
+
+| variable | |
+|---|---|
+| `DENSE_RETRIEVAL=off` | drop the two vector paths; retrieval degrades to the question bank + full-text search, and every search says so in `paths_run` |
+| `EMBEDDING_DTYPE=fp32` | the 90 MB original weights instead of the 23 MB int8 ones. **Re-run `npm run embed` after changing it** — `/eval` will otherwise tell you the index no longer matches the model |
+| `EMBEDDING_LOCAL_ONLY=1` | refuse to fall back to huggingface.co, i.e. fail loudly if `models/` is missing. What CI and the deployment use |
 
 Model provider (first match wins, or force with `MODEL_PROVIDER`):
 
@@ -238,7 +269,7 @@ the database. What is running there, precisely:
 | | |
 |---|---|
 | Corpus | the real 160 articles, 3 annexes and 80 study questions, verified byte-identical to a local seed by SHA-256 over `Article.text`, `Article.searchText`, `Question.searchText` and `Annex.text` |
-| Retrieval | the question bank and full-text paths. **Not** the dense path: `DENSE_RETRIEVAL=off`, so live results are the 80.0% primary@5 pipeline, not the 88.8% one in the table above. `/eval` says so on the page |
+| Retrieval | the question bank and full-text paths — `DENSE_RETRIEVAL=off`, so live results are the **80.0%** primary@5 pipeline, not the 91.3% one in the table above. `/eval` says so on the page, and each search reports it in `paths_run`. The reason was a cold start spent downloading the model; that is now fixed (the model is bundled and the traced function is 74 MB), so this row is the next thing to change — see [VERIFICATION.md](VERIFICATION.md) for what has and has not been measured |
 | Model | `MODEL_PROVIDER=mock`. For the questions the script covers you get a written answer; for anything else it runs the real search and then says it will not compose an answer, listing what retrieval returned |
 | Everything else | genuine: the MCP server at `/api/mcp`, the citation audit, the article panel, the 0-5 ratings and their aggregates on `/eval` |
 
@@ -259,8 +290,15 @@ private should pin the provider's CA with `sslrootcert` instead.
   `CITATION_SERVICE_URL=http://host:8000`. Without it the agent formats and parses citations locally — the service is
   optional on purpose, and every call to it is bounded by a 2.5s timeout that falls back rather than stalling the loop.
 - **Plain Linux host (Apache + Gunicorn)**: `deploy/apache/basic-law.conf` fronts the Node app and proxies the Python
-  service under `/citations/`; `deploy/systemd/citation-py.service` runs Gunicorn. Both are committed as worked
-  examples and are not exercised by CI.
+  service under `/citations/`; `deploy/systemd/citation-py.service` runs Gunicorn. The proxying is **run**, not just
+  written down — `deploy/apache/local-check.sh` starts Apache on port 8080 against a TLS-less copy of the same vhost
+  and checks both upstreams through it, including that the `/api/chat` token stream still arrives incrementally
+  (`scripts/stream-timing.mjs`; a proxy that buffers the body is invisible to every other test in this repo and
+  leaves the reader staring at a blank page until the tool loop ends). CI runs it on Apache 2.4 under Debian.
+
+  One result from doing it rather than assuming it: with `flushpackets=on` removed, `mod_proxy_http` **still**
+  streamed incrementally on 2.4.67 — the directive is an explicit guarantee, not the thing that saves you. The
+  systemd unit remains an unexercised example.
 
 ## Data
 
@@ -278,7 +316,11 @@ repository reproduces it solely as a study corpus.
   faster than any approximate index; on a corpus the size of HKLII the column would become a `vector(384)` with an
   HNSW index and nothing else in the query layer would change.
 - If the model cannot be loaded (offline, or `DENSE_RETRIEVAL=off`), dense search returns nothing and the fusion
-  degrades to exactly the previous question-bank + full-text behaviour rather than failing.
+  degrades to exactly the previous question-bank + full-text behaviour rather than failing — and **says so**:
+  `paths_run` omits `dense`, the `vec` lane is struck through, and `/eval` names the degraded pipeline's own score.
+  A silent degradation would be the worse bug of the two, and it is the one that nearly shipped: the file tracer
+  does not follow `onnxruntime-node`'s runtime `require` of its native binary, so a deployment can carry the model
+  and still be unable to load it (VERIFICATION.md).
 - Single-tenant: no auth; a conversation is addressed by its id in the URL. Relevance ratings are therefore
   unauthenticated too — fine for a sample, but a real deployment collecting them for research would need a per-reader
   identity before the numbers meant anything.

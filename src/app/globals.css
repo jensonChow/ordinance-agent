@@ -115,3 +115,9 @@ textarea {
 [data-lane="on"] {
   opacity: 1;
 }
+/* Ran-and-lost is faint; not-running-at-all is struck through and still legible, because it says something about
+   the answer rather than about this question. */
+[data-lane="down"] {
+  opacity: 0.5;
+  border-style: dashed !important;
+}

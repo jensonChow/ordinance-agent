@@ -1,11 +1,22 @@
 import { redirect } from "next/navigation";
 import type { UIMessage } from "ai";
 import { Shell } from "./shell";
+import evaluation from "../../eval/retrieval-results.json";
+import { indexStatus } from "@/lib/index-meta";
 import { listChapters } from "@/lib/law";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
+
+// Read out of the evaluation's own output, never typed in: the deploy panel states what this deployment scores,
+// and a hand-copied percentage there would be the one number on the page nothing checks.
+const FUSED = "hybrid RRF (bank ×2 + FTS + dense)";
+const LEXICAL = "question bank → smart FTS";
+const pct = (strategy: string) => {
+  const v = (evaluation.results as Record<string, Record<string, Record<string, number>>>)[strategy]?.test?.["primary@5"];
+  return v == null ? "—" : `${(100 * v).toFixed(1)}%`;
+};
 
 /** Four plausible options for one quiz item: the bank's own answer plus three other articles it never lists. */
 function options(answer: number, pool: number[]): number[] {
@@ -73,6 +84,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
     }),
   );
 
+  // This function does not run retrieval — /api/mcp does, in its own process — so all it can honestly report is how
+  // the deployment is configured. Whether the dense path came up on a given search travels with that search's own
+  // result (`paths_run` / the `vec` label), which is what the panel points the reader at.
+  const index = await indexStatus();
+
   return (
     <Shell
       conversationId={conversation.id}
@@ -100,7 +116,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         ratings: ratingCount,
       }}
       quiz={quiz.map((q) => ({ ...q, options: q.options.map((n) => ({ n, preview: preview.get(n) ?? "" })) }))}
-      denseOff={process.env.DENSE_RETRIEVAL === "off"}
+      dense={{
+        enabled: process.env.DENSE_RETRIEVAL !== "off",
+        withVectors: pct(FUSED),
+        withoutVectors: pct(LEXICAL),
+        index: index.state === "ok" ? index.built : null,
+      }}
     />
   );
 }

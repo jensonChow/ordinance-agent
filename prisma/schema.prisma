@@ -158,3 +158,13 @@ model Question {
   /// L2-normalised embedding of `text` — the canonical question only, never the held-out variants.
   embedding  Float[] @default([])
 }
+
+/// What built the vector index, so a deployment can tell whether its own model matches it. Without this the
+/// mismatch is silent: a q8 query vector scored against an fp32 index still returns five articles, just worse
+/// ones. Re-embedding and comparing was tried first and rejected — batch padding makes a same-model vector
+/// reproduce to only ~0.9989, too close to the ~0.9967 of a different precision to separate (VERIFICATION.md).
+model IndexMeta {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

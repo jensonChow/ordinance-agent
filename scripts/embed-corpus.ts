@@ -10,7 +10,8 @@
  * downloaded once and cached by @huggingface/transformers.
  */
 import "dotenv/config";
-import { embed, EMBEDDING_DIMS, EMBEDDING_MODEL } from "../src/lib/embeddings";
+import { embed, EMBEDDING_DIMS, EMBEDDING_DTYPE, EMBEDDING_MODEL } from "../src/lib/embeddings";
+import { writeIndexStamp } from "../src/lib/index-meta";
 import { prisma } from "../src/lib/prisma";
 
 const BATCH = 32;
@@ -31,7 +32,7 @@ async function embedAll(rows: { key: string | number; text: string }[]) {
 }
 
 async function main() {
-  console.log(`model: ${EMBEDDING_MODEL} (${EMBEDDING_DIMS} dims)`);
+  console.log(`model: ${EMBEDDING_MODEL} ${EMBEDDING_DTYPE} (${EMBEDDING_DIMS} dims)`);
 
   const articles = await prisma.article.findMany({ select: { number: true, text: true }, orderBy: { number: "asc" } });
   console.log(`articles: ${articles.length}`);
@@ -55,6 +56,11 @@ async function main() {
   >(`SELECT (SELECT count(*) FROM "Article" WHERE cardinality(embedding) = ${EMBEDDING_DIMS}) AS articles,
             (SELECT count(*) FROM "Question" WHERE cardinality(embedding) = ${EMBEDDING_DIMS}) AS questions`);
   console.log(`stored: ${withArticle} articles, ${withQuestion} questions with ${EMBEDDING_DIMS}-dim vectors`);
+
+  // Stamp the index with the model that built it, so a deployment running a different one can say so instead of
+  // silently scoring against vectors it did not make. See src/lib/index-meta.ts.
+  const stamp = await writeIndexStamp({ articles: Number(withArticle), questions: Number(withQuestion) });
+  console.log(`stamped: ${stamp}`);
   await prisma.$disconnect();
 }
 

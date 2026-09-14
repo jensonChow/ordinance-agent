@@ -9,6 +9,7 @@
 import "dotenv/config";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { EMBEDDING_DTYPE, EMBEDDING_MODEL } from "../src/lib/embeddings";
 import {
   searchArticles,
   searchArticlesDense,
@@ -75,10 +76,10 @@ async function main() {
     });
     return `${header}\n${rows.join("\n")}`;
   };
-  const md = `# Retrieval evaluation\n\nDate: ${new Date().toISOString().slice(0, 10)} · corpus: 160 articles · ${bank.questions.length} study questions, each with two paraphrases: paraphrase 1 = **dev** (used to tune tags and stop-words), paraphrase 2 = **test** (never inspected while tuning). The canonical questions themselves are never used as queries.\n\n"primary" = the first article listed for the question is in the top-k; "any" = any listed article is.\n\n## test\n\n${table("test")}\n\n## dev\n\n${table("dev")}\n\n## all\n\n${table("all")}\n`;
+  const md = `# Retrieval evaluation\n\nDate: ${new Date().toISOString().slice(0, 10)} · dense paths: \`${EMBEDDING_MODEL}\` **${EMBEDDING_DTYPE}** (the index must be built by the same model: \`npm run embed\`) · corpus: 160 articles · ${bank.questions.length} study questions, each with two paraphrases: paraphrase 1 = **dev** (used to tune tags and stop-words), paraphrase 2 = **test** (never inspected while tuning). The canonical questions themselves are never used as queries.\n\n"primary" = the first article listed for the question is in the top-k; "any" = any listed article is.\n\n## test\n\n${table("test")}\n\n## dev\n\n${table("dev")}\n\n## all\n\n${table("all")}\n`;
   mkdirSync(resolve(__dirname, "../eval"), { recursive: true });
   writeFileSync(resolve(__dirname, "../eval/RESULTS.md"), md);
-  writeFileSync(resolve(__dirname, "../eval/retrieval-results.json"), JSON.stringify({ cases: cases.length, results, misses }, null, 2));
+  writeFileSync(resolve(__dirname, "../eval/retrieval-results.json"), JSON.stringify({ cases: cases.length, model: EMBEDDING_MODEL, dtype: EMBEDDING_DTYPE, results, misses }, null, 2));
   console.log(md);
   await prisma.$disconnect();
 }
