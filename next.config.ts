@@ -43,9 +43,15 @@ const nextConfig: NextConfig = {
       "node_modules/@huggingface/transformers/.cache/**",
       // fp32 weights sit beside the q8 ones; only the configured dtype belongs in the function.
       "models/Xenova/all-MiniLM-L6-v2/onnx/model.onnx",
+      // Safe to drop: the Node build of @huggingface/transformers references only onnxruntime-common and
+      // onnxruntime-node — `onnxruntime-web` appears nowhere in it, so 130 MB of WASM would never be loaded.
       "node_modules/onnxruntime-web/**",
-      "node_modules/sharp/**",
-      "node_modules/@img/**",
+      // `sharp` is NOT droppable, however tempting it looks for a text-embedding pipeline. transformers.node.mjs
+      // imports it at the top level — it is the only bare import in the whole build — so excluding it made the
+      // module fail to resolve and the first deployment with vectors on ran lexical-only. Its platform binaries
+      // are npm optional dependencies, so the Linux builder installs only the Linux ones; the WASM fallback is
+      // the one part a native build never touches.
+      "node_modules/@img/sharp-wasm32/**",
     ],
   },
 };
