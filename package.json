@@ -18,7 +18,8 @@
     "test:watch": "vitest",
     "embed": "tsx scripts/embed-corpus.ts",
     "model:fetch": "tsx scripts/fetch-model.ts",
-    "prebuild": "npm run model:fetch"
+    "prebuild": "npm run model:fetch",
+    "embed:export": "tsx scripts/export-embeddings.ts"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.68",
