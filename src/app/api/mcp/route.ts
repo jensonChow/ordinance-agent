@@ -4,6 +4,9 @@ import { z } from "zod";
 import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesHybrid, searchQuestions, suggestTopics } from "@/lib/law";
 
 export const runtime = "nodejs";
+// Retrieval runs here, and on a cold serverless instance the first query pays connection setup and — when dense
+// retrieval is enabled — the embedding model load. The platform default of 10s is not enough for that first call.
+export const maxDuration = 60;
 
 /** Serialise a tool payload as a single text content block (what LLM clients read). */
 function text(payload: unknown) {
