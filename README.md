@@ -2,9 +2,10 @@
 
 [![ci](https://github.com/jensonChow/ordinance-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/jensonChow/ordinance-agent/actions/workflows/ci.yml)
 
-**Live: [ordinance-agent.vercel.app](https://ordinance-agent.vercel.app)** — real corpus, real retrieval, real
-citation audit and ratings. No model key is configured there, so the assistant will not compose prose answers; it
-says so and shows what retrieval returned. See [Deploy](#deploy) for exactly what is and is not running.
+**Live: [ordinance-agent.vercel.app](https://ordinance-agent.vercel.app)** — real corpus, the full four-path
+retrieval including sentence embeddings, real citation audit and ratings. No model key is configured there, so the
+assistant will not compose prose answers; it says so and shows what retrieval returned. See [Deploy](#deploy) for
+exactly what is and is not running.
 
 The interface is in Chinese — Hong Kong legal information is bilingual, and so are HKLII and CLIC — while article
 text is the Government's English booklet and is marked `lang="en"` wherever it appears. It is built from a design
@@ -269,9 +270,18 @@ the database. What is running there, precisely:
 | | |
 |---|---|
 | Corpus | the real 160 articles, 3 annexes and 80 study questions, verified byte-identical to a local seed by SHA-256 over `Article.text`, `Article.searchText`, `Question.searchText` and `Annex.text` |
-| Retrieval | the question bank and full-text paths — `DENSE_RETRIEVAL=off`, so live results are the **80.0%** primary@5 pipeline, not the 91.3% one in the table above. `/eval` says so on the page, and each search reports it in `paths_run`. The reason was a cold start spent downloading the model; that is now fixed (the model is bundled and the traced function is 74 MB), so this row is the next thing to change — see [VERIFICATION.md](VERIFICATION.md) for what has and has not been measured |
+| Retrieval | **all four paths, including the two vector ones** — the same fusion the table above measures at 91.3% primary@5. The model is bundled into the function (`EMBEDDING_LOCAL_ONLY=1`, so a missing file is an error rather than a quiet download), and the index was loaded into the hosted database from `data/embeddings.json` with the digest check in `deploy/supabase/load-embeddings.sql` |
+| Latency | a warm `search_articles` through the MCP endpoint is ~1.0–1.6 s end to end from outside the region, and a call that needs no embedding (`find_questions`) is the same, so that figure is the round trips to the database, not the model. A request landing on a new instance has been seen at 2.7–4.8 s |
 | Model | `MODEL_PROVIDER=mock`. For the questions the script covers you get a written answer; for anything else it runs the real search and then says it will not compose an answer, listing what retrieval returned |
 | Everything else | genuine: the MCP server at `/api/mcp`, the citation audit, the article panel, the 0-5 ratings and their aggregates on `/eval` |
+
+**The index is loaded as a file, not typed into the database.** `npm run embed && npm run embed:export` writes
+`data/embeddings.json` — the vectors plus the model that made them and a SHA-256 digest of the exact corpus text
+they were computed from — and `deploy/supabase/load-embeddings.sql` has the hosted PostgreSQL fetch that from this
+public repository with the `http` extension, recompute the digest in SQL, and refuse the file if it disagrees. The
+same route the corpus took. It exists because a raw PostgreSQL connection from the machine doing the deploy opens
+and then hangs, so `npm run embed` cannot be pointed at production; the side effect is that what production is
+querying stays inspectable in the repository at a known commit.
 
 Two honest notes about how it was provisioned. The schema was applied through the Supabase API rather than
 `prisma migrate deploy`, because the machine doing the deploy could not open a raw PostgreSQL connection; the seed

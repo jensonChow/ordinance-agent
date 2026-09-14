@@ -269,12 +269,58 @@ suggests it is what makes streaming work.
   re-downloaded the weights. It now caches `models/` and runs `npm run model:fetch`, with `EMBEDDING_LOCAL_ONLY=1`
   on the embed and eval steps so CI exercises the same bundled path as the deployment.
 
+### Switching the hosted deployment onto the vector pipeline
+
+| Step | Result |
+|---|---|
+| Hosted index, before | `Article` 160 rows / `Question` 80 rows, **0 with a 384-dim vector**; no `IndexMeta` table; the `http` extension already installed |
+| Schema | `index_meta` migration applied through the Supabase API, plus `GRANT` to `ordinance_app` (the app does not connect as `postgres`) |
+| Export | `npm run embed:export` → `data/embeddings.json`, 1.89 MB, article digest `276f175b…`, question digest `5e9a050c…` |
+| The digest is reproducible in SQL | the same two digests recomputed by `sha256(convert_to(string_agg(…)))` against the **local** database: byte-identical to the TypeScript, so the loader's refusal is a real check and not decoration |
+| Fetchable | after pushing, `curl` of `raw.githubusercontent.com/…/3751814b/data/embeddings.json` → 200, 1,893,124 bytes (matches local) |
+| Load | the loader ran against the hosted database: 160 articles + 80 questions embedded, stamp `Xenova/all-MiniLM-L6-v2@q8 dims=384 articles=160 questions=80` |
+| Vectors arrived intact | article 114: L2 norm `1.000000`, self dot product `1.000000`, and `embedding[1] = 0.002445087535306811::float8` → **true** for the first, second and last component. (The API's JSON rounds to 15 digits on display, which looks like a mismatch and is not — hence the comparison in SQL) |
+| Environment | `DENSE_RETRIEVAL=on`, `EMBEDDING_LOCAL_ONLY=1` set on Vercel production; redeployed |
+
+**The first deployment with vectors on did not work, and said so itself.** `search_articles` came back
+`paths_run: ["questionBank","fullText"]`, `dense_path: unavailable`. That is the reporting built above doing its
+job — but two things were wrong with the state it exposed:
+
+1. `/eval`, rendering in a *different* serverless function, still showed the vector pipeline as enabled, because
+   all it could see was the environment variable. Fixed by having the retrieval route write down what it observed
+   (`dense-path-observed` in `IndexMeta`) and letting that observation outrank the setting everywhere in the UI.
+2. "unavailable" did not say why. Fixed by carrying the loader's own error out through `paths.denseReason` into the
+   tool output — which then answered the question in one request:
+
+   > `not running (Failed to load external module @huggingface/transformers-…: Error [ERR_MODULE_NOT_FOUND]:
+   > Cannot find package 'sharp' imported from /var/task/node_modules/@huggingface/transformers/dist/transformers.node.mjs)`
+
+`sharp` had been excluded from tracing as obviously useless to a text-embedding pipeline. It is the **only bare
+import** in `transformers.node.mjs`, so excluding it stopped the module resolving at all. Checked the same build
+for what else it reaches rather than guessing a second time — it names `onnxruntime-common` and `onnxruntime-node`
+and never `onnxruntime-web`, so that 130 MB stays out. With `sharp` and `@img` back (minus the WASM fallback a
+native build never touches), `/api/mcp` traces to **90.8 MB**: onnxruntime-node 35.56 MB, the model 23.69 MB,
+sharp + @img 16.58 MB.
+
+| After the fix | Result |
+|---|---|
+| Live `search_articles` | `paths_run: ["questionBank","fullText","dense"]`, `dense_path: ran`; among the hits, **article 116 found only by `semantic`** — the vector path is contributing on the deployment, not merely loading |
+| Live `/eval` | no degradation notice; "向量索引 `…@q8 dims=384 articles=160 questions=80` · 建於 2026-09-14 —— 檢索行程最近一次實跑確認用的就是它", and the table's 91.3% |
+| Live UI | browser at ordinance-agent.vercel.app, one question: the `qb`, `fts` **and `vec`** lanes all render `on` |
+| Live latency, 12 samples | warm 0.97–1.61 s end to end from outside the region, median 1.61 s; 2.73–4.79 s when a request landed on a new instance. `find_questions`, which embeds nothing, is the same warm (1.20 / 1.63 s) — so the ~1.2 s floor is the round trips to Supabase, not the model, whose own share is the ~215 ms measured locally |
+
+### CI
+
+All four commits green, including the Apache step, which had never run on Debian when it was written: `Syntax OK`,
+7 tools through the proxy, `/citations/parse -> count=4`, and `verdict: incremental` both direct and through the
+proxy. The model cache now hits (`= onnx/model_quantized.onnx (22,972,370 bytes, already present)`), which the
+previous key never did.
+
 ### Not verified
 
-- **The live Vercel function with `DENSE_RETRIEVAL` on.** Everything above about the function is measured from the
-  traced build, and the deployment at ordinance-agent.vercel.app still runs with the dense path off until it is
-  redeployed. Until then: whether the linux binding loads there, and what the first request after a cold start
-  actually costs, are open.
-- The CI Apache step has not run on Debian yet — it is new in this commit.
+- The cold start was **observed** (2.7–4.8 s on a new instance) but not decomposed: how much of it is the model, how
+  much the Node runtime and the first database connection, is not separated. Locally the model's share is ~215 ms.
 - `deploy/systemd/citation-py.service` is still an unexercised example.
 - Real model provider (Azure or OpenAI-compatible), Docker build: unchanged, still not run.
+- The hosted database still has no `_prisma_migrations` history — `index_meta` was applied through the Supabase API
+  like the schema before it, so Prisma does not know it has been applied there.
