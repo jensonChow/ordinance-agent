@@ -1,27 +1,117 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/*
+ * Design tokens from design/Redesign.dc.html — a paper-and-ink palette rather than a product UI, because the
+ * thing on screen is a legal text and it should read like one. Kept as custom properties so the components can
+ * use them inline the way the design canvas does, and so the dark theme is one block rather than a second set
+ * of class names.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f5f2ea;
+  --sheet: #fdfcf8;
+  --sheet2: #efebe1;
+  --sunk: #e9e4d8;
+  --ink: #17140f;
+  --ink2: #4d463c;
+  --ink3: #5c5549;
+  --ink4: #706859;
+  --rule: #ddd6c8;
+  --rule2: #c3baa8;
+  --rule3: #17140f;
+  --seal: #8e3b2a;
+  --sealbg: #f8ece8;
+  --sealrule: #e2c4bb;
+  --ok: #2a5a45;
+  --okbg: #e9f0ea;
+  --okrule: #bcd2c4;
+  --mark: #f3e3b4;
+  --shadow: rgba(23, 20, 15, 0.08);
+  /* Overwritten at runtime by the shell, which measures the sticky header instead of assuming its height. */
+  --hdr: 126px;
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="dark"] {
+  --paper: #100f0c;
+  --sheet: #191712;
+  --sheet2: #201d17;
+  --sunk: #0b0a08;
+  --ink: #efeade;
+  --ink2: #b7af9f;
+  --ink3: #a39a8a;
+  --ink4: #8e8576;
+  --rule: #2d2922;
+  --rule2: #453f34;
+  --rule3: #efeade;
+  --seal: #d98f76;
+  --sealbg: #2a1a14;
+  --sealrule: #4a2c22;
+  --ok: #82c2a4;
+  --okbg: #15241d;
+  --okrule: #2b463a;
+  --mark: #453a1c;
+  --shadow: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Noto Sans SC", -apple-system, "Helvetica Neue", Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--seal);
+}
+
+mark {
+  background: var(--mark);
+  color: var(--ink);
+  padding: 0 1px;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+[data-scroll] {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+@keyframes drawin {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+[data-anim] {
+  animation: drawin 0.28s ease both;
+}
+
+/* The retrieval lanes dim rather than disappear, so the shape of the pipeline stays visible while it runs. */
+[data-lane="off"] {
+  opacity: 0.18;
+}
+[data-lane="on"] {
+  opacity: 1;
 }

@@ -1,11 +1,22 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { UIMessage } from "ai";
-import { Chat } from "./chat";
+import { Shell } from "./shell";
+import { listChapters } from "@/lib/law";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
+
+/** Four plausible options for one quiz item: the bank's own answer plus three other articles it never lists. */
+function options(answer: number, pool: number[]): number[] {
+  const wrong = pool.filter((n) => n !== answer);
+  const picked: number[] = [];
+  for (let i = 0; i < wrong.length && picked.length < 3; i++) {
+    const n = wrong[(i * 7 + answer) % wrong.length];
+    if (!picked.includes(n)) picked.push(n);
+  }
+  return [...picked, answer].sort((a, b) => a - b);
+}
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
   const { c } = await searchParams;
@@ -22,121 +33,74 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
   });
   if (!conversation) redirect("/");
 
-  const initialMessages = conversation.messages.map(
-    (m) => ({ id: m.id, role: m.role, parts: m.parts as UIMessage["parts"] }) as UIMessage,
-  );
-
-  const [notes, chapters, articleCount, questionCount, toolCallCount, starters, conversations] = await Promise.all([
-    prisma.note.findMany({ orderBy: { createdAt: "desc" }, take: 8 }),
-    prisma.chapter.findMany({ orderBy: { ordinal: "asc" }, select: { number: true, title: true } }),
-    prisma.article.count(),
-    prisma.question.count(),
-    prisma.toolCall.count({ where: { message: { conversationId: c } } }),
-    prisma.$queryRaw<{ text: string }[]>(Prisma.sql`SELECT "text" FROM "Question" ORDER BY random() LIMIT 6`),
-    prisma.conversation.findMany({
-      where: { messages: { some: {} } }, // hide conversations nobody wrote in
-      orderBy: { updatedAt: "desc" },
-      take: 8,
-      include: { _count: { select: { messages: true } }, messages: { orderBy: { createdAt: "asc" }, take: 1, where: { role: "user" } } },
-    }),
-  ]);
+  const [chapters, notes, conversations, articleCount, questionCount, annexCount, toolCallCount, ratingCount, starters, quizRows] =
+    await Promise.all([
+      listChapters(),
+      prisma.note.findMany({ orderBy: { createdAt: "desc" }, take: 12 }),
+      prisma.conversation.findMany({
+        where: { messages: { some: {} } },
+        orderBy: { updatedAt: "desc" },
+        take: 8,
+        include: { _count: { select: { messages: true } }, messages: { where: { role: "user" }, orderBy: { createdAt: "asc" }, take: 1 } },
+      }),
+      prisma.article.count(),
+      prisma.question.count(),
+      prisma.annex.count(),
+      prisma.toolCall.count({ where: { message: { conversationId: c } } }),
+      prisma.rating.count(),
+      prisma.$queryRaw<{ text: string }[]>(Prisma.sql`SELECT "text" FROM "Question" ORDER BY random() LIMIT 5`),
+      prisma.$queryRaw<{ id: string; text: string; articles: number[] }[]>(
+        Prisma.sql`SELECT "id", "text", "articles" FROM "Question" WHERE cardinality("articles") > 0 ORDER BY random() LIMIT 10`,
+      ),
+    ]);
 
   const firstUserText = (parts: unknown) => {
     const p = parts as { type: string; text?: string }[] | undefined;
     return p?.find((x) => x.type === "text")?.text ?? "";
   };
 
-  return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:flex-row">
-      <section className="flex min-h-[70vh] flex-1 flex-col">
-        <header className="mb-4">
-          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="text-xl font-semibold tracking-tight">Basic Law Study Agent</h1>
-            <Link href="/eval" className="text-xs text-neutral-500 underline-offset-2 hover:underline">
-              How well does the retrieval work?
-            </Link>
-          </div>
-          <p className="text-sm text-neutral-500">
-            An agent that reads the Basic Law of the HKSAR through MCP tools, cites the articles it read, and keeps your
-            notes in PostgreSQL.
-          </p>
-          <p className="mt-2 rounded-md border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
-            <strong>This is a study aid, not legal advice.</strong> It answers only from the text of the Basic Law and
-            can be wrong or incomplete. For any real matter, consult a lawyer. Every answer shows which articles were
-            read, and flags any article named without being looked up.
-          </p>
-        </header>
-        <Chat
-          conversationId={conversation.id}
-          initialMessages={initialMessages}
-          starters={starters.map((s) => s.text)}
-          chapters={chapters}
-        />
-      </section>
+  const pool = [...new Set(quizRows.map((q) => q.articles[0]))];
+  const quiz = quizRows.map((q) => ({ id: q.id, text: q.text, answer: q.articles[0], options: options(q.articles[0], pool) }));
+  // An option is only answerable with a glimpse of what the article says, so each one carries its opening clause.
+  const previewRows = await prisma.article.findMany({
+    where: { number: { in: [...new Set(quiz.flatMap((q) => q.options))] } },
+    select: { number: true, text: true },
+  });
+  const preview = new Map(
+    previewRows.map((a) => {
+      const clipped = a.text.replace(/\s+/g, " ").slice(0, 96);
+      return [a.number, clipped.length < a.text.length ? `${clipped}…` : clipped];
+    }),
+  );
 
-      <aside className="w-full shrink-0 space-y-6 text-sm md:w-72">
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="font-medium">Conversations</h2>
-            <Link href="/" className="text-xs text-neutral-500 underline-offset-2 hover:underline">
-              New
-            </Link>
-          </div>
-          <ul className="space-y-1">
-            {conversations.map((cv) => (
-              <li key={cv.id}>
-                <Link
-                  href={`/?c=${cv.id}`}
-                  className={`block truncate rounded px-2 py-1 text-xs hover:bg-neutral-100 dark:hover:bg-neutral-900 ${
-                    cv.id === c ? "bg-neutral-100 font-medium dark:bg-neutral-900" : "text-neutral-600 dark:text-neutral-400"
-                  }`}
-                  title={firstUserText(cv.messages[0]?.parts)}
-                >
-                  {firstUserText(cv.messages[0]?.parts) || "(empty)"}{" "}
-                  <span className="text-neutral-400">· {cv._count.messages}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="mb-2 font-medium">Corpus</h2>
-          <p className="text-neutral-500">
-            {articleCount} articles · 3 annexes · {questionCount} study questions · full-text search in PostgreSQL. Tool calls
-            in this conversation: {toolCallCount}.
-          </p>
-          <ul className="mt-2 space-y-1 text-neutral-600 dark:text-neutral-400">
-            {chapters.map((ch) => (
-              <li key={ch.number}>
-                <span className="font-mono text-xs">{ch.number}</span> {ch.title}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="mb-2 font-medium">Recent notes</h2>
-          {notes.length === 0 ? (
-            <p className="text-neutral-500">No notes yet. Ask the agent to “save a note …”.</p>
-          ) : (
-            <ul className="space-y-2">
-              {notes.map((n) => (
-                <li key={n.id} className="rounded bg-neutral-100 p-2 dark:bg-neutral-900">
-                  {n.articleNumber ? <span className="mr-1 font-mono text-xs">art. {n.articleNumber}</span> : null}
-                  {n.body}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
-          <h2 className="mb-2 font-medium">MCP endpoint</h2>
-          <p className="text-neutral-500">
-            The same seven tools are exposed at <code className="font-mono text-xs">/api/mcp</code> (Streamable HTTP)
-            for Claude, Cursor or any MCP client, along with two resources, an article resource template and three
-            prompts.
-          </p>
-        </div>
-      </aside>
-    </main>
+  return (
+    <Shell
+      conversationId={conversation.id}
+      initialMessages={conversation.messages.map(
+        (m) => ({ id: m.id, role: m.role, parts: m.parts as UIMessage["parts"] }) as UIMessage,
+      )}
+      chapters={chapters.map((ch) => ({
+        number: ch.number,
+        title: ch.title,
+        from: ch.articles?.from ?? null,
+        to: ch.articles?.to ?? null,
+      }))}
+      starters={starters.map((s) => s.text)}
+      notes={notes.map((n) => ({ id: n.id, articleNumber: n.articleNumber, body: n.body }))}
+      conversations={conversations.map((cv) => ({
+        id: cv.id,
+        label: firstUserText(cv.messages[0]?.parts),
+        count: cv._count.messages,
+      }))}
+      counts={{
+        articles: articleCount,
+        questions: questionCount,
+        annexes: annexCount,
+        toolCalls: toolCallCount,
+        ratings: ratingCount,
+      }}
+      quiz={quiz.map((q) => ({ ...q, options: q.options.map((n) => ({ n, preview: preview.get(n) ?? "" })) }))}
+      denseOff={process.env.DENSE_RETRIEVAL === "off"}
+    />
   );
 }

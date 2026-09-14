@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{{const n=new URLSearchParams(location.search).get("theme");if(n==="light"||n==="dark"){document.documentElement.dataset.theme=n}}{if(new URLSearchParams(location.search).get("_omthumb")==="1"){const n=(f)=>{const g=f.focus;if(!g)return;f.focus=function(h){g.call(this,{...h,preventScroll:true})}};n(HTMLElement.prototype);n(SVGElement.prototype);if(typeof MathMLElement!=="undefined"){n(MathMLElement.prototype)}const d=(f)=>{f.removeAttribute("autofocus");f.inert=true;if(!(f instanceof HTMLElement))f.removeAttribute("tabindex")};const p=(f)=>{if(f.hasAttribute("autofocus"))d(f);for(const g of f.querySelectorAll("[autofocus]")){d(g)}};p(document.documentElement);new MutationObserver((f)=>{for(const g of f){for(const h of g.addedNodes){if(h.nodeType===1)p(h)}}}).observe(document,{childList:true,subtree:true})}}{const n=()=>{try{if(document.querySelector('meta[name="color-scheme"]'))return;const d=getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim();if(d&&d!=="normal")return;const p=(y)=>{if(!y)return null;const m=getComputedStyle(y).backgroundColor.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)$/);if(!m)return null;const w=m[4]==null?1:parseFloat(m[4])/(m[4].endsWith("%")?100:1);if(w<0.99)return null;return[+m[1],+m[2],+m[3]]};const f=p(document.body)||p(document.documentElement);if(!f)return;const g=(y)=>{const m=y/255;return m<=0.04045?m/12.92:((m+0.055)/1.055)**2.4};const h=0.2126*g(f[0])+0.7152*g(f[1])+0.0722*g(f[2]);document.documentElement.style.setProperty("color-scheme",h<0.4?"dark":"light")}catch{}};if(document.readyState==="complete")n();else window.addEventListener("load",n)}var I=[];var B=false;var K=false;var C=()=>{};if(K===true){try{const n=setTimeout.bind(window);const d=1e4;const p=15;const f=1e4;const g=120000;const h=200;const y=(o)=>{try{let r;if(typeof o==="string")r=o;else if(o instanceof URL)r=o.href;else if(typeof Request!=="undefined"&&o instanceof Request)r=o.url;else return null;if(!r)return null;const l=document.baseURI;const i=new URL(r,l);if(i.protocol!=="http:"&&i.protocol!=="https:")return null;if(i.origin!==new URL(l).origin)return null;return i.origin+i.pathname}catch{return null}};const m=new Map;const w=(o)=>{let r=m.get(o);if(!r){if(m.size>=h){const l=m.keys().next().value;if(l!==undefined)m.delete(l)}r={fails:[],until:0,cooldown:f,hard:false};m.set(o,r)}return r};const R=(o)=>{const r=m.get(o);return r!==undefined&&r.until>Date.now()};const O=(o,r)=>{const l=Date.now();const i=w(o);if(r)i.hard=true;if(i.until>l)return;i.fails.push(l);while(i.fails.length>0&&i.fails[0]<=l-d)i.fails.shift();if(i.fails.length>=p){i.until=l+i.cooldown;if(i.hard)i.cooldown=Math.min(i.cooldown*2,g);i.fails.length=0;try{n(()=>{try{S(true)}catch{}},i.until-l+100)}catch{}console.warn("[omelette] asset circuit breaker: pausing requests to "+o+" for "+Math.round((i.until-l)/1000)+"s after "+p+" failures in "+d/1000+"s")}};const e=(o)=>{m.delete(o)};const t=100;const a=new WeakMap;const u=new Set;let s=null;const S=(o)=>{for(const r of Array.from(u)){try{const l=a.get(r);if(l===undefined){u.delete(r);continue}if(o){const i=y(l);if(i!==null&&R(i))continue}a.delete(r);u.delete(r);if(s!==null)s.call(r,l)}catch{}}};C=()=>{try{m.clear();S(false)}catch{}};document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")C()});const _=window.fetch;if(typeof _==="function"){const o=function(...r){let l=null;try{l=y(r[0])}catch{}if(l!==null&&R(l)){let c;try{if(r[1]&&r[1].signal!==undefined){c=r[1].signal||undefined}else if(typeof Request!=="undefined"&&r[0]instanceof Request){c=r[0].signal||undefined}}catch{c=undefined}return new Promise((k,b)=>{const E=()=>{try{return c.reason!==undefined?c.reason:new DOMException("The operation was aborted.","AbortError")}catch{return new DOMException("The operation was aborted.","AbortError")}};try{if(c&&c.aborted){b(E());return}}catch{}let T=false;const j=()=>{if(T)return;T=true;b(E())};try{if(c)c.addEventListener("abort",j,{once:true})}catch{}n(()=>{if(T)return;T=true;try{if(c)c.removeEventListener("abort",j)}catch{}let L;try{L=new Response(null,{status:429,statusText:"Too Many Requests",headers:{"Retry-After":"10"}})}catch{L={ok:false,status:429}}k(L)},250)})}const i=_.apply(window,r);if(l!==null){const c=l;i.then((k)=>{try{if(k.ok)e(c);else if(k.status===401||k.status===403||k.status===404||k.status===429){O(c,k.status!==404)}}catch{}},()=>{})}return i};window.fetch=o}const v=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,"src");if(v!==undefined&&v.set!==undefined&&v.get!==undefined){const o=v.set;s=o;Object.defineProperty(HTMLImageElement.prototype,"src",{configurable:true,enumerable:v.enumerable,get:v.get,set(r){const l=`${r}`;try{const i=y(l);if(i!==null&&R(i)){a.set(this,l);if(u.size<t)u.add(this);return}}catch{}try{a.delete(this);u.delete(this)}catch{}o.call(this,l)}})}try{const o=HTMLImageElement.prototype.setAttribute;HTMLImageElement.prototype.setAttribute=function(r,l){if(arguments.length<2){o.apply(this,arguments);return}if(typeof r==="string"&&r.toLowerCase()==="src"){const i=`${l}`;try{const c=y(i);if(c!==null&&R(c)){a.set(this,i);if(u.size<t)u.add(this);return}a.delete(this);u.delete(this)}catch{}o.call(this,r,i);return}o.call(this,r,l)}}catch{}window.addEventListener("error",(o)=>{try{const r=o.target;if(r instanceof HTMLImageElement){const l=y(r.currentSrc||r.src||"");if(l!==null)O(l,true)}}catch{}},true);window.addEventListener("load",(o)=>{try{const r=o.target;if(r instanceof HTMLImageElement){const l=y(r.currentSrc||r.src||"");if(l!==null)e(l);const i=a.get(r);if(i!==undefined){let c=false;try{c=new URL(i,document.baseURI).href===new URL(r.currentSrc||r.src||"",document.baseURI).href}catch{c=false}if(c){a.delete(r);u.delete(r)}}}}catch{}},true)}catch{}}var J=30000;var G=3000;document.addEventListener("DOMContentLoaded",()=>{const n=window.Babel;const d="om-src-id";if(n&&n.registerPlugin&&!(n.availablePlugins&&n.availablePlugins[d])){n.registerPlugin(d,({types:h})=>({visitor:{JSXOpeningElement(y,m){const w=y.node;if(w.name&&w.name.type==="JSXMemberExpression")return;for(let t=0;t<w.attributes.length;t++){const a=w.attributes[t];if(a.type==="JSXAttribute"&&a.name&&a.name.name==="data-om-id")return}const R=m.file&&m.file.opts&&m.file.opts.filename||"?";const O=w.loc&&w.loc.start;const e=`jsx:${R}:${w.start??0}:${O?O.line:0}:${O?O.column+1:0}`;w.attributes.push(h.jsxAttribute(h.jsxIdentifier("data-om-id"),h.stringLiteral(e)))}}}))}const p="om-text-extract";let f=false;if(B&&n&&n.registerPlugin&&!(n.availablePlugins&&n.availablePlugins[p])){const h=window.React;if(h&&h.useSyncExternalStore&&h.createElement){f=true;const y={};const m=new Set;let w=0;window.__omTextO=y;window.__omTextSet=(e)=>{for(const t in e){const a=e[t];if(a==null)delete y[t];else y[t]=a}w++;m.forEach((t)=>t())};const R=(e)=>{m.add(e);return()=>m.delete(e)};const O=()=>w;window.__OmT=function e(t){h.useSyncExternalStore(R,O,O);return h.createElement("span",{"data-om-text":t.i,className:"__om-t"},t.i in y?y[t.i]:t.children)};n.registerPlugin(p,({types:e})=>{const t={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const a={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const u=(o,r)=>e.logicalExpression("??",e.memberExpression(e.logicalExpression("||",e.memberExpression(e.identifier("window"),e.identifier("__omTextO")),e.objectExpression([])),e.stringLiteral(o),true),r);const s=(o)=>o.file&&o.file.opts&&o.file.opts.filename||"?";const S=(o)=>o.file&&o.file.code||"";const _=(o,r)=>{const l=(c)=>c&&c.start!=null&&c.end!=null&&(c.type==="StringLiteral"||c.type==="TemplateLiteral"&&c.expressions.length===0)?[c.start,c.end]:null;const i=l(r);if(i)return i;if(r&&r.type==="Identifier"){const c=o.scope.getBinding(r.name);if(c&&c.constant&&c.path.node.type==="VariableDeclarator"){return l(c.path.node.init)}}return null};const v=(o,r,l)=>{const i=o.node;let c=false;const k=(E,T)=>{c=true;return e.jsxElement(e.jsxOpeningElement(e.jsxIdentifier("__OmT"),[e.jsxAttribute(e.jsxIdentifier("i"),e.stringLiteral(E))],false),e.jsxClosingElement(e.jsxIdentifier("__OmT")),[T],false)};const b=i.children.map((E)=>{if(E.type==="JSXText"){if(E.start==null||E.end==null)return E;const T=l.slice(E.start,E.end);const j=T.length-T.trimStart().length;const L=T.length-T.trimEnd().length;if(j+L>=T.length)return E;return k(`txt:${r}:${E.start+j}:${E.end-L}`,E)}if(E.type==="JSXExpressionContainer"){const T=_(o,E.expression);if(T)return k(`str:${r}:${T[0]}:${T[1]}`,E)}return E});if(c)i.children=b};return{visitor:{JSXOpeningElement(o,r){const l=o.node;const i=s(r);const c={};for(let k=0;k<l.attributes.length;k++){const b=l.attributes[k];if(b.type!=="JSXAttribute"||!b.name)continue;const E=b.name.name;if(!a[E])continue;if(!b.value||b.value.type!=="StringLiteral")continue;if(b.value.start==null||b.value.end==null)continue;const T=`txt:${i}:${b.value.start}:${b.value.end}`;c[E]=T;b.value=e.jsxExpressionContainer(u(T,e.stringLiteral(b.value.value)))}if(Object.keys(c).length){l.attributes.push(e.jsxAttribute(e.jsxIdentifier("data-om-text-attrs"),e.stringLiteral(JSON.stringify(c))))}},JSXElement(o,r){const l=o.node.openingElement;const i=l&&l.name&&l.name.name;if(i==="__OmT")return;if(typeof i==="string"&&t[i])return;v(o,s(r),S(r))},JSXFragment(o,r){v(o,s(r),S(r))}}}})}}const g=f?["transform-react-jsx-source",d,p]:["transform-react-jsx-source",d];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((h,y)=>{const m=h.getAttribute("data-plugins")||"";const w=g.filter((R)=>m.indexOf(R)<0);if(w.length){h.setAttribute("data-plugins",m?`${m},${w.join(",")}`:w.join(","))}if(!h.hasAttribute("data-filename")){h.setAttribute("data-filename",h.getAttribute("src")||`inline-${y}`)}})});var A=window.parent;var U="not editable here — open the project in the Claude Design editor to save";var W=()=>Promise.resolve({persisted:false,noHost:true,reason:U});var H=W;var M="data/storage.json";var z=()=>{try{const n=new URL(document.baseURI);const d=n.pathname.match(/\/projects\/([^/]+)\/serve\//);if(d)return d[1];return n.hostname.split(".")[0]||""}catch{return location.hostname.split(".")[0]||""}};var Z=()=>{try{const n=new URL(document.baseURI);const d=n.pathname.indexOf("/serve/");if(d>=0)return n.origin+n.pathname.slice(0,d+"/serve/".length)+M}catch{}return"./"+M};var x=null;var N=()=>{if(!x){x=fetch(Z(),{cache:"no-store"}).then((n)=>{if(n.ok)return n.text();return n.status===404?"":null}).catch(()=>null).then((n)=>{if(n===null){x=null;return null}const d=new Map;if(!n)return d;let p;try{p=JSON.parse(n)}catch{console.warn("[omelette.storage] "+M+" is not valid JSON; treating the store as unreadable so a save cannot overwrite the "+"hand-edited bytes. Fix the JSON (or delete the file) to re-enable persistence.");x=null;return null}if(p===null||typeof p!=="object"||Array.isArray(p)){console.warn("[omelette.storage] "+M+" doesn't hold a JSON object; treating the store as unreadable so a save cannot "+"overwrite the hand-edited bytes. Make the top level a JSON object to re-enable persistence.");x=null;return null}const f=p;if("data"in f){const g=f.data;if(g===null||typeof g!=="object"||Array.isArray(g)){console.warn("[omelette.storage] "+M+' has a "data" field that is not a JSON object; treating the store as unreadable so a '+'save cannot overwrite the hand-edited bytes. Make "data" a JSON object to re-enable persistence.');x=null;return null}const h=f._meta;const y=h!==null&&typeof h==="object"?h.project:undefined;if(typeof y==="string"&&y!==""&&y!==z())return d;for(const m of Object.keys(g))d.set(m,g[m]);return d}for(const g of Object.keys(f)){if(g!=="_meta")d.set(g,f[g])}return d})}return x};var F=(n)=>H(M,JSON.stringify({_meta:{project:z(),version:1},data:Object.fromEntries(n)},null,2));var D=Promise.resolve();var $=(n)=>{const d=D.then(n);D=d.then(()=>{return},()=>{return});return d};var V=/sk-(?:ant-)?[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[a-z]-[A-Za-z0-9][A-Za-z0-9-]{9,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;var Y=/password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|credential/i;var Q=(n,d,p)=>{if(V.test(d)||Y.test(n)&&typeof p==="string"&&p.length>=8){console.warn('[omelette.storage] the value for "'+n+'" looks like a credential. The storage file is a plaintext project file — visible to '+"everyone with project access and copied when the project is duplicated. Do not store secrets here.")}};var q={persisted:false,reason:"could not load the existing store — not overwriting it"};var X={persisted:false,reason:"stored value changed since a failed read — re-read this key before saving"};var P=new Set;var ee={get:(n)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.get: key must be a string"))}return $(N).then((d)=>{if(d===null){P.add(n);return null}P.delete(n);if(!d.has(n))return null;const p=d.get(n);return p==null?null:JSON.parse(JSON.stringify(p))})},set:(n,d)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.set: key must be a string"))}let p;try{p=JSON.stringify(d)}catch(g){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable ("+String(g)+")"))}if(p===undefined){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable"))}Q(n,p,d);const f=JSON.parse(p);return $(()=>N().then((g)=>{if(g===null)return q;if(P.has(n)){if(g.has(n))return X;P.delete(n)}g.set(n,f);return F(g)}))},delete:(n)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.delete: key must be a string"))}return $(()=>N().then((d)=>{if(d===null)return q;if(P.has(n)){if(d.has(n))return X;P.delete(n)}d.delete(n);return F(d)}))},keys:()=>$(N).then((n)=>n===null?[]:Array.from(n.keys()))};window.omelette={writeFile:(n,d)=>H(n,d).then((p)=>{if(!p.persisted&&!p.noHost){throw new Error(p.reason||"write failed")}}),storage:ee};if(A&&A!==window){const n=(e,t)=>{try{A.postMessage({__omelette_log:true,type:e,data:t},"*")}catch{}};["log","warn","error"].forEach((e)=>{const t=console[e];console[e]=(...a)=>{const u=a.map((s)=>{try{return typeof s==="object"?JSON.stringify(s):String(s)}catch{try{return String(s)}catch{return"[unstringifiable]"}}}).join(" ");n(e,u);t.apply(console,a)}});window.addEventListener("error",(e)=>{const t=e.target;if(t&&t!==window&&t.tagName){const a=t.src||t.href||"";n("resource_error",`${t.tagName} failed to load: ${a}`)}else{n("error",`${e.message||"Unknown error"} at ${e.filename||"?"}:${e.lineno||0}:${e.colno||0}`)}},true);window.addEventListener("unhandledrejection",(e)=>{const t=e.reason;const a=t instanceof Error?`${t.message} ${t.stack}`:String(t);n("error",`Unhandled rejection: ${a}`)});window.addEventListener("click",(e)=>{if(e.defaultPrevented||e.button!==0)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;const t=e.composedPath?e.composedPath():[];const a=["button","input","select","textarea","summary","label"];let u=null;for(const v of t){if(!(v instanceof Element))continue;if(v.localName==="a"){if(!(v instanceof HTMLAnchorElement))return;u=v;break}if(a.indexOf(v.localName)!==-1)return}if(!u)return;if(u.isContentEditable)return;const s=u.closest("[contenteditable]");if(s&&s.getAttribute("contenteditable")!=="false")return;const S=(u.getAttribute("target")||"_self").toLowerCase();if(S!=="_self"&&S!=="_top"&&S!=="_parent")return;let _;try{_=new URL(u.href)}catch{return}if(_.protocol!=="http:"&&_.protocol!=="https:")return;if(location.origin==="null")return;if(_.origin===location.origin)return;e.preventDefault();window.open(_.href,"_blank","noopener,noreferrer")});const d=()=>{try{A.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(window.ResizeObserver)new ResizeObserver(d).observe(document.documentElement);const p=()=>{d();if(!document.querySelector('script[type="text/babel"],script[type="text/jsx"]'))return;const e=()=>document.getElementById("root")||document.querySelector("body > div[id]");const t=e()?.firstElementChild??null;let a=0;const u=()=>{const s=e();if(s&&s.firstElementChild!==t||++a>30){d();return}setTimeout(u,100)};setTimeout(u,100)};if(document.readyState==="complete")p();else window.addEventListener("load",p);const f={};let g=0;const h=(e)=>new Promise((t,a)=>{if(!I.length){a(new Error("claude.complete: no parent origin"));return}const u=`c${++g}`;const s=()=>setTimeout(()=>{delete f[u];a(new Error(`claude.complete: no data for ${J/1000}s`))},J);const S=s();f[u]={resolve:t,reject:a,text:"",t:S,arm:s};try{for(const _ of I){A.postMessage({__om_api:true,id:u,body:e},_)}}catch(_){clearTimeout(S);delete f[u];a(_)}});const y=8;const m=async(e,t)=>{if(!Array.isArray(e.messages)){throw new Error("claude.complete: tools require a messages array")}const a=e.messages.slice();const u={...e,tools:e.tools.map((_)=>{if(_===null||typeof _!=="object")return _;const v={};for(const o of Object.keys(_)){if(typeof _[o]!=="function")v[o]=_[o]}return v})};const s=u.tool_choice;const S=s!=null&&(s.type==="any"||s.type==="tool")?{...u,tool_choice:s.disable_parallel_tool_use!==undefined?{type:"auto",disable_parallel_tool_use:s.disable_parallel_tool_use}:{type:"auto"}}:u;for(let _=0;_<y;_++){const v=await h({..._===0?u:S,messages:a});const o=v.message;const r=o&&Array.isArray(o.content)?o.content:null;const l=r?r.filter((c)=>c?.type==="tool_use"):[];if(o?.stop_reason!=="tool_use"||l.length===0){return v.text}const i=[];for(const c of l){const k=t.get(c.name);if(!k){i.push({type:"tool_result",tool_use_id:c.id,content:`no handler for tool "${c.name}"`,is_error:true});continue}try{const b=await k(c.input);const E=typeof b==="string"?b:O(b)??"";i.push({type:"tool_result",tool_use_id:c.id,content:E})}catch(b){i.push({type:"tool_result",tool_use_id:c.id,content:String(b?.message??b??"tool handler failed"),is_error:true})}}a.push({role:"assistant",content:r},{role:"user",content:i})}throw new Error(`claude.complete: exceeded ${y} tool turns`)};window.claude={complete(e){const t=e;if(t!==null&&typeof t==="object"&&Array.isArray(t.tools)&&t.tools.some((a)=>a!==null&&typeof a==="object"&&typeof a.run==="function")){const a=new Map;for(const u of t.tools){if(u!==null&&typeof u==="object"&&typeof u.run==="function"){a.set(String(u.name),u.run)}}return m(t,a)}return h(e).then((a)=>a.text)}};const w={};let R=0;H=(e,t)=>new Promise((a)=>{if(!I.length){a({persisted:false,noHost:true,reason:U});return}const u=`f${++R}`;const s=setTimeout(()=>{delete w[u];a({persisted:false,noHost:true,reason:U})},G);w[u]={settle:a,t:s};try{for(const S of I){A.postMessage({__om_file:true,id:u,op:"write",path:e,content:t},S)}}catch{clearTimeout(s);delete w[u];a({persisted:false,noHost:true,reason:U})}});const O=(e)=>{try{return JSON.stringify(e)}catch{return JSON.stringify(String(e))}};window.addEventListener("message",(e)=>{if(I.indexOf(e.origin)<0)return;if(e.source!==A)return;const t=e.data;if(!t)return;if(t.type==="omelette-preview-refresh"){if(typeof t.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(t.token))return;const s=Math.max(1,Math.floor((t.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+t.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+s;C();return}if(t.__om_file_r){const s=w[t.id];if(!s)return;clearTimeout(s.t);delete w[t.id];s.settle(t.ok?{persisted:true}:{persisted:false,reason:t.error||"write failed"});return}if(t.__om_api_r){const s=f[t.id];if(!s)return;if(t.error!=null){clearTimeout(s.t);delete f[t.id];s.reject(new Error(t.error));return}if(t.chunk!=null){clearTimeout(s.t);s.t=s.arm();s.text+=t.chunk;return}if(t.done){clearTimeout(s.t);delete f[t.id];s.resolve({text:t.text!=null?t.text:s.text,message:t.message});return}return}if(!t.__om_eval)return;const a=t;const u=(s)=>{e.source.postMessage({...s,__om_eval_r:1,id:a.id},e.origin)};try{const s=(0,eval)(a.code);if(s&&typeof s.then==="function"){s.then((S)=>u({ok:1,v:O(S)}),(S)=>u({ok:0,e:String(S)}))}else{u({ok:1,v:O(s)})}}catch(s){u({ok:0,e:String(s)})}})}})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"><style>
+:root{
+--paper:#f5f2ea;--sheet:#fdfcf8;--sheet2:#efebe1;--sunk:#e9e4d8;
+--ink:#17140f;--ink2:#4d463c;--ink3:#5c5549;--ink4:#706859;
+--rule:#ddd6c8;--rule2:#c3baa8;--rule3:#17140f;
+--seal:#8e3b2a;--sealbg:#f8ece8;--sealrule:#e2c4bb;
+--ok:#2a5a45;--okbg:#e9f0ea;--okrule:#bcd2c4;
+--mark:#f3e3b4;--shadow:rgba(23,20,15,.08);--hdr:126px;
+}
+[data-theme="dark"]{
+--paper:#100f0c;--sheet:#191712;--sheet2:#201d17;--sunk:#0b0a08;
+--ink:#efeade;--ink2:#b7af9f;--ink3:#a39a8a;--ink4:#8e8576;
+--rule:#2d2922;--rule2:#453f34;--rule3:#efeade;
+--seal:#d98f76;--sealbg:#2a1a14;--sealrule:#4a2c22;
+--ok:#82c2a4;--okbg:#15241d;--okrule:#2b463a;
+--mark:#453a1c;--shadow:rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Noto Sans SC',-apple-system,'Helvetica Neue',Helvetica,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+a{color:var(--ink);text-decoration:none}
+a:hover{color:var(--seal)}
+mark{background:var(--mark);color:var(--ink);padding:0 1px}
+button{font-family:inherit;color:inherit}
+input{font-family:inherit;color:inherit}
+[data-open="0"]{display:none!important}
+[data-on="0"]{display:none}
+[data-hot="1"]{background:var(--mark)!important}
+[data-tabsel="1"]{background:var(--ink)!important;color:var(--paper)!important}
+[data-tabsel="1"] *{color:var(--paper)!important}
+[data-quiz="ok"]{background:var(--okbg)!important;box-shadow:inset 3px 0 0 var(--ok)}
+[data-quiz="bad"]{background:var(--sealbg)!important;box-shadow:inset 3px 0 0 var(--seal)}
+[data-tone="ok"]{color:var(--ok)!important}
+[data-tone="bad"]{color:var(--seal)!important}
+[data-lane="off"]{opacity:.18}
+[data-lane="on"]{opacity:1}
+[data-scroll]{overflow-y:auto;scrollbar-width:thin}
+@keyframes drawin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+[data-anim]{animation:drawin .28s ease both}
+</style></helmet>
+
+<div data-theme="{{ theme }}" style="min-height:100vh;background:var(--paper);color:var(--ink)">
+
+<header ref="{{ hdrRef }}" style="position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:3px double var(--rule2)">
+  <div style="max-width:1560px;margin:0 auto;padding:14px 26px 11px;display:flex;align-items:flex-end;gap:26px;flex-wrap:wrap">
+    <div style="display:flex;align-items:flex-end;gap:11px;flex:0 0 auto">
+      <span style="font:600 31px/1 'Noto Serif SC',serif;letter-spacing:.06em">基本法研讀</span>
+      <span style="font:400 10.5px/1.5 'Geist Mono',monospace;letter-spacing:.16em;color:var(--ink3);text-transform:uppercase;padding-bottom:3px">Basic&nbsp;Law<br>Study&nbsp;Agent</span>
+    </div>
+
+    <nav style="display:flex;align-items:stretch;gap:0;margin-left:6px;border:1px solid var(--rule2);border-radius:2px;overflow:hidden;flex:0 0 auto">
+      <button type="button" onClick="{{ goAsk }}" data-tabsel="{{ tabAsk }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 15px 6px;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);cursor:pointer;text-align:left" style-hover="background:var(--sheet2)">
+        <span style="font:500 13.5px/1.2 'Noto Sans SC',sans-serif">問答</span>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;letter-spacing:.11em;color:var(--ink4)">ASK</span>
+      </button>
+      <button type="button" onClick="{{ goRead }}" data-tabsel="{{ tabRead }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 15px 6px;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);cursor:pointer;text-align:left" style-hover="background:var(--sheet2)">
+        <span style="font:500 13.5px/1.2 'Noto Sans SC',sans-serif">讀條文</span>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;letter-spacing:.11em;color:var(--ink4)">READ</span>
+      </button>
+      <button type="button" onClick="{{ goQuiz }}" data-tabsel="{{ tabQuiz }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 15px 6px;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);cursor:pointer;text-align:left" style-hover="background:var(--sheet2)">
+        <span style="font:500 13.5px/1.2 'Noto Sans SC',sans-serif">自測</span>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;letter-spacing:.11em;color:var(--ink4)">QUIZ</span>
+      </button>
+      <button type="button" onClick="{{ goNotes }}" data-tabsel="{{ tabNotes }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 15px 6px;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);cursor:pointer;text-align:left" style-hover="background:var(--sheet2)">
+        <span style="font:500 13.5px/1.2 'Noto Sans SC',sans-serif">筆記</span>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;letter-spacing:.11em;color:var(--ink4)">NOTES</span>
+      </button>
+      <button type="button" onClick="{{ goEval }}" data-tabsel="{{ tabEval }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 15px 6px;border:0;background:transparent;color:var(--ink2);cursor:pointer;text-align:left" style-hover="background:var(--sheet2)">
+        <span style="font:500 13.5px/1.2 'Noto Sans SC',sans-serif">評測</span>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;letter-spacing:.11em;color:var(--ink4)">EVAL</span>
+      </button>
+    </nav>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:14px;flex:0 0 auto">
+      <button type="button" onClick="{{ toggleDisc }}" style="display:flex;align-items:center;gap:7px;border:1px solid var(--sealrule);background:var(--sealbg);color:var(--seal);border-radius:2px;padding:5px 10px;cursor:pointer" style-hover="border-color:var(--seal)">
+        <span style="font:500 12px/1.3 'Noto Serif SC',serif;letter-spacing:.08em">研習用途 · 非法律意見</span>
+      </button>
+      <button type="button" onClick="{{ toggleLeft }}" data-tabsel="{{ leftOpen }}" title="显示/隐藏目录栏" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 10px;font:400 12px/1.3 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">目錄</button>
+      <button type="button" onClick="{{ toggleRight }}" data-tabsel="{{ rightOpen }}" title="显示/隐藏右侧栏" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 10px;font:400 12px/1.3 'Noto Sans SC',sans-serif;cursor:pointer;min-width:52px" style-hover="background:var(--sheet2)">{{ sidePanelLabel }}</button>
+      <button type="button" onClick="{{ toggleTheme }}" title="切换亮/暗主题" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 11px;font:400 10.5px/1.3 'Geist Mono',monospace;letter-spacing:.1em;cursor:pointer" style-hover="background:var(--sheet2)">{{ themeLabel }}</button>
+    </div>
+  </div>
+
+  <div data-open="{{ discOpen }}" style="border-top:1px solid var(--rule);background:var(--sealbg)">
+    <div style="max-width:1560px;margin:0 auto;padding:13px 26px;display:flex;gap:22px;align-items:flex-start">
+      <p style="margin:0;max-width:760px;font:400 13.5px/1.85 'Noto Sans SC',sans-serif;color:var(--seal);text-wrap:pretty">本工具只依据《香港特别行政区基本法》正文作答，可能不完整或有误，任何实际事务请咨询律师。每个答案都会列出它读过哪些条文，并把「答案点名、但检索从未返回过」的条文单独标红 —— 那是模型凭记忆写出来的编号，不是查到的。<span style="color:var(--ink3)">This is a study aid, not legal advice. Every answer shows which articles were actually read, and flags any article named without a lookup.</span></p>
+      <button type="button" onClick="{{ toggleDisc }}" style="margin-left:auto;border:0;background:transparent;color:var(--seal);font:400 17px/1 'Geist Mono',monospace;cursor:pointer;padding:2px 6px">×</button>
+    </div>
+  </div>
+</header>
+
+<div style="max-width:1560px;margin:0 auto;display:flex;align-items:stretch;flex-wrap:wrap;min-height:calc(100vh - var(--hdr))">
+
+  <aside data-open="{{ leftOpen }}" style="flex:0 1 230px;border-right:1px solid var(--rule);padding:20px 0 26px;display:flex;flex-direction:column;gap:24px;min-width:0;position:sticky;top:var(--hdr);align-self:flex-start;max-height:calc(100vh - var(--hdr));overflow-y:auto;scrollbar-width:thin">
+    <section style="padding:0 18px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+        <h2 style="margin:0;font:600 12px/1.3 'Noto Serif SC',serif;letter-spacing:.14em">會話</h2>
+        <button type="button" style="margin-left:auto;border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:2px 7px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">＋ 新會話</button>
+      </div>
+      <input value="{{ convQuery }}" onChange="{{ setConvQuery }}" placeholder="搜索会话与引用条文…" style="width:100%;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:2px;padding:6px 9px;font:400 12px/1.5 'Noto Sans SC',sans-serif;outline:none;margin-bottom:10px" style-focus="border-color:var(--ink3)">
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px">
+        <li><a href="#" style="display:block;padding:7px 9px;border-radius:2px;background:var(--sheet2);box-shadow:inset 2px 0 0 var(--ink)">
+          <span style="display:block;font:500 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">关税与自由港</span>
+          <span style="display:flex;align-items:center;gap:6px;margin-top:3px;font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3)">今天 · 2 回合<span style="color:var(--ok)">114</span><span style="color:var(--seal)">106⚠</span></span>
+        </a></li>
+        <li><a href="#" style="display:block;padding:7px 9px;border-radius:2px" style-hover="background:var(--sheet2)">
+          <span style="display:block;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">七年与永久性居民身份</span>
+          <span style="display:flex;align-items:center;gap:6px;margin-top:3px;font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3)">昨天 · 3 回合<span style="color:var(--ok)">24 25</span></span>
+        </a></li>
+        <li><a href="#" style="display:block;padding:7px 9px;border-radius:2px" style-hover="background:var(--sheet2)">
+          <span style="display:block;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">言论自由在第几章</span>
+          <span style="display:flex;align-items:center;gap:6px;margin-top:3px;font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3)">9月11日 · 4 回合<span style="color:var(--ok)">27</span></span>
+        </a></li>
+        <li><a href="#" style="display:block;padding:7px 9px;border-radius:2px" style-hover="background:var(--sheet2)">
+          <span style="display:block;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">ICCPR 在 1997 年后是否仍适用</span>
+          <span style="display:flex;align-items:center;gap:6px;margin-top:3px;font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3)">9月8日 · 2 回合<span style="color:var(--ok)">39</span></span>
+        </a></li>
+      </ul>
+    </section>
+
+    <section style="padding:0 18px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+        <h2 style="margin:0;font:600 12px/1.3 'Noto Serif SC',serif;letter-spacing:.14em">目錄</h2>
+        <span style="font:500 12px/1.5 'Noto Sans SC',sans-serif;letter-spacing:.06em;color:var(--ink4)">九章 · 160 條</span>
+      </div>
+      <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">I</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">总则</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">1–11</span></a></li>
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">II</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">中央与特区的关系</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">12–23</span></a></li>
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">III</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">居民的基本权利和义务</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">24–42</span></a></li>
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">IV</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">政治体制</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">43–104</span></a></li>
+        <li style="border-top:1px solid var(--rule);background:var(--sheet2)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px"><span style="flex:0 0 22px;font:500 10.5px/1.6 'Geist Mono',monospace;color:var(--ink)">V</span><span style="flex:1;font:500 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink);min-width:0">经济</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">105–135</span></a>
+          
+        </li>
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">VI</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">教育、科学、文化、体育、宗教、劳工和社会服务</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">136–149</span></a></li>
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">VII</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">对外事务</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">150–157</span></a></li>
+        <li style="border-top:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">VIII</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">本法的解释和修改</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">158–159</span></a></li>
+        <li style="border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)"><a href="#" onClick="{{ openChapter }}" style="display:flex;align-items:baseline;gap:9px;padding:6px 2px" style-hover="background:var(--sheet2)"><span style="flex:0 0 22px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">IX</span><span style="flex:1;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">附则</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">160</span></a></li>
+      </ul>
+      <p style="margin:8px 0 0;font:400 10.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink4)">附件 I–III · 80 道学习题 · 语料与本地 seed 经 SHA-256 校验一致</p>
+    </section>
+
+    <section style="margin-top:auto;padding:14px 18px 0;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--ok);flex:0 0 auto"></span>
+        <span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">MCP /api/mcp</span>
+        <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">7 tools</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:5px;height:5px;border-radius:50%;background:var(--ink4);flex:0 0 auto"></span>
+        <span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">provider mock</span>
+        <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">dense off</span>
+      </div>
+    </section>
+  </aside>
+
+  <main style="flex:1 1 420px;min-width:0;border-right:1px solid var(--rule)">
+
+    <div data-open="{{ openAsk }}">
+    <div data-open="{{ openEmpty }}">
+    <div style="max-width:720px;margin:0 auto;padding:70px 34px 60px">
+      <p style="margin:0 0 10px;font:400 10.5px/1.6 'Geist Mono',monospace;letter-spacing:.18em;color:var(--ink4);text-transform:uppercase">A new conversation</p>
+      <h1 style="margin:0 0 16px;font:400 31px/1.45 'Noto Serif SC',serif;letter-spacing:.01em;text-wrap:pretty">用你自己的话问，<br>我用基本法的原话答。</h1>
+      <p style="margin:0 0 34px;max-width:560px;font:400 13.5px/2 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">法条不会按你的说法写。你说「带东西进香港要交税吗」，条文写的是「free port … shall not impose any tariff」—— 所以这里不是关键词搜索：80 道学习题、全文检索、语义向量三路并行召回，再融合排序，最后逐条读原文。右栏会把这个过程全程摊开给你看。</p>
+
+      <div style="border-top:1px solid var(--rule3);padding-top:13px;margin-bottom:26px">
+        <p style="margin:0 0 12px;font:600 12px/1.4 'Noto Serif SC',serif;letter-spacing:.1em">从学习题开始 <span style="font:400 10.5px 'Geist Mono',monospace;letter-spacing:.1em;color:var(--ink4);margin-left:4px">6 OF 80</span></p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--rule)">
+          <button type="button" onClick="{{ ask }}" style="text-align:left;border:0;background:var(--sheet);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:var(--sheet2)">
+            <span style="font:400 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink)">我带进香港的货物需要缴关税吗？</span>
+            <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">Do I have to pay customs duty on goods I bring into Hong Kong?</span>
+            <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4);margin-top:2px">qb-062 → art. 114</span>
+          </button>
+          <button type="button" style="text-align:left;border:0;background:var(--sheet);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:var(--sheet2)">
+            <span style="font:400 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink)">住满七年就能成为永久性居民吗？</span>
+            <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">Who counts as a permanent resident of Hong Kong?</span>
+            <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4);margin-top:2px">qb-001 → art. 24</span>
+          </button>
+          <button type="button" style="text-align:left;border:0;background:var(--sheet);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:var(--sheet2)">
+            <span style="font:400 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink)">在香港出生的孩子一定有居留权吗？</span>
+            <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">Is my child born outside Hong Kong a permanent resident?</span>
+            <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4);margin-top:2px">qb-002 → art. 24</span>
+          </button>
+          <button type="button" style="text-align:left;border:0;background:var(--sheet);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:var(--sheet2)">
+            <span style="font:400 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink)">谁有投票权和参选权？</span>
+            <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">Who has the right to vote and to stand for election?</span>
+            <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4);margin-top:2px">qb-005 → art. 26</span>
+          </button>
+          <button type="button" style="text-align:left;border:0;background:var(--sheet);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:var(--sheet2)">
+            <span style="font:400 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink)">我可以起诉政府或政府人员吗？</span>
+            <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">Can I sue the government or its officials?</span>
+            <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4);margin-top:2px">qb-015 → art. 35</span>
+          </button>
+          <button type="button" style="text-align:left;border:0;background:var(--sheet);padding:13px 15px;cursor:pointer;display:flex;flex-direction:column;gap:4px" style-hover="background:var(--sheet2)">
+            <span style="font:400 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink)">1997 年后《公民权利和政治权利国际公约》还适用吗？</span>
+            <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">Does the ICCPR still apply after 1997?</span>
+            <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4);margin-top:2px">qb-018 → art. 39</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:26px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:16px">
+        <div style="flex:1 1 180px;min-width:0">
+          <p style="margin:0 0 3px;font:400 22px/1.2 'Noto Serif SC',serif">160</p>
+          <p style="margin:0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">条正文 · 3 个附件<br>已全部入库并校验</p>
+        </div>
+        <div style="flex:1 1 180px;min-width:0">
+          <p style="margin:0 0 3px;font:400 22px/1.2 'Noto Serif SC',serif">88.8<span style="font-size:13px;color:var(--ink3)">%</span></p>
+          <p style="margin:0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">held-out primary@5<br>三路融合，本地实测</p>
+        </div>
+        <div style="flex:1 1 180px;min-width:0">
+          <p style="margin:0 0 3px;font:400 22px/1.2 'Noto Serif SC',serif">7</p>
+          <p style="margin:0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">个 MCP 工具<br>Claude / Cursor 可直接接入</p>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div data-open="{{ openAnswer }}">
+    <article style="max-width:760px;margin:0 auto;padding:30px 34px 44px">
+
+      <div style="display:flex;align-items:flex-start;gap:16px;padding-bottom:18px;border-bottom:1px solid var(--rule3)">
+        <div style="flex:1;min-width:0">
+          <p style="margin:0 0 6px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">你的提问 · TURN 01</p>
+          <h1 style="margin:0;font:400 22px/1.6 'Noto Serif SC',serif;letter-spacing:.01em;text-wrap:pretty">我带进香港的货物需要缴关税吗？</h1>
+          <p style="margin:6px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink3)">Do I have to pay customs duty on goods I bring into Hong Kong?</p>
+        </div>
+        <div style="flex:0 0 auto;display:flex;flex-direction:column;gap:5px;align-items:flex-end">
+          <button type="button" onClick="{{ replay }}" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer;white-space:nowrap" style-hover="background:var(--sheet2)">↻ 重播检索过程</button>
+          <button type="button" onClick="{{ reset }}" style="border:1px solid var(--rule);background:transparent;color:var(--ink3);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer;white-space:nowrap" style-hover="color:var(--ink)">看空状态</button>
+        </div>
+      </div>
+
+      <div data-open="{{ working }}" data-anim style="margin-top:20px;border:1px solid var(--rule);background:var(--sheet);border-radius:2px;padding:16px 18px">
+        <p style="margin:0 0 10px;font:500 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink2)">{{ stageLabel }}</p>
+        <div style="height:2px;background:var(--sunk);overflow:hidden"><div style="height:2px;background:var(--ink);width:{{ stagePct }}"></div></div>
+        <p style="margin:9px 0 0;font:400 10.5px/1.7 'Geist Mono',monospace;color:var(--ink4)">右栏同步展开三路召回与融合排序 →</p>
+      </div>
+
+      <div data-open="{{ answered }}" data-anim style="margin-top:22px">
+        <p style="margin:0 0 13px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">回答 · 每句都挂着它依据的条文，指向句子即高亮右栏证据</p>
+
+        <div style="font:400 17px/2.05 'Noto Serif SC',serif;color:var(--ink);text-wrap:pretty">
+          <span data-hot="{{ s1hot }}" onMouseEnter="{{ hover114 }}" onMouseLeave="{{ hoverOff }}" style="cursor:default;padding:1px 0" style-hover="background:var(--mark)">香港是自由港，一般货物入境不征关税。<sup style="font:500 10.5px 'Geist Mono',monospace;color:var(--ok);margin-left:2px;letter-spacing:.04em">114</sup></span>
+          <span data-hot="{{ s2hot }}" onMouseEnter="{{ hover114 }}" onMouseLeave="{{ hoverOff }}" style="cursor:default;padding:1px 0" style-hover="background:var(--mark)">第 114 条的原话是「shall maintain the status of a free port and shall not impose any tariff unless otherwise prescribed by law」。<sup style="font:500 10.5px 'Geist Mono',monospace;color:var(--ok);margin-left:2px;letter-spacing:.04em">114</sup></span>
+          <span data-hot="{{ s3hot }}" onMouseEnter="{{ hover114 }}" onMouseLeave="{{ hoverOff }}" style="cursor:default;padding:1px 0" style-hover="background:var(--mark)">注意句末的 unless otherwise prescribed by law —— 关税被禁止，但烟、酒、燃油这类应课税品仍可由普通立法征税，两者不是一回事。<sup style="font:500 10.5px 'Geist Mono',monospace;color:var(--ok);margin-left:2px;letter-spacing:.04em">114</sup></span>
+          <span data-hot="{{ s4hot }}" onMouseEnter="{{ hover106 }}" onMouseLeave="{{ hoverOff }}" style="cursor:default;border-bottom:1px solid var(--seal);padding:1px 0;text-decoration:underline;text-decoration-style:wavy;text-decoration-color:var(--seal);text-underline-offset:4px" style-hover="background:var(--mark)">特区财政独立、收入不上缴中央，所以这些税项决定权留在本地。<sup style="font:500 10.5px 'Geist Mono',monospace;color:var(--seal);margin-left:2px;letter-spacing:.04em">106 ⚠</sup></span>
+        </div>
+
+        <div data-open="{{ flagOpen }}" style="margin-top:20px;border:1px solid var(--sealrule);background:var(--sealbg);border-radius:2px;padding:13px 15px;display:flex;gap:13px;align-items:flex-start">
+          <span style="flex:0 0 auto;font:500 12px/1.5 'Noto Sans SC',sans-serif;letter-spacing:.06em;color:var(--seal);border:1px solid var(--seal);border-radius:2px;padding:2px 5px;margin-top:1px">⚠ 1</span>
+          <div style="min-width:0">
+            <p style="margin:0 0 4px;font:500 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--seal)">最后一句点了第 106 条，但没有任何工具返回过它。</p>
+            <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">这个编号来自模型的记忆，不是检索结果 —— 内容也许对，但本次回答没有为它提供任何依据。<a href="#" style="text-decoration:underline;text-underline-offset:2px;color:var(--seal)">读第 106 条原文</a> 自行核对，或 <a href="#" style="text-decoration:underline;text-underline-offset:2px;color:var(--seal)">让它重答并只用读过的条文</a>。</p>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;padding-top:14px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="opacity:.86">存为笔记</button>
+          <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">导出问答（含引用与工具日志）</button>
+          <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">分享链接</button>
+          <span style="margin-left:auto;min-width:0;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4)">3 tool calls · 3 via MCP · 257 ms · mock / scripted-basic-law-agent</span>
+        </div>
+      </div>
+
+      <div style="margin-top:34px;padding-top:16px;border-top:1px solid var(--rule)">
+        <p style="margin:0 0 10px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">继续追问</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px">
+          <button type="button" style="border:1px solid var(--rule);background:var(--sheet);color:var(--ink2);border-radius:2px;padding:6px 11px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="border-color:var(--ink3)">那烟酒的应课税品税写在哪里？</button>
+          <button type="button" style="border:1px solid var(--rule);background:var(--sheet);color:var(--ink2);border-radius:2px;padding:6px 11px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="border-color:var(--ink3)">第 114 条和第 115 条的区别？</button>
+          <button type="button" style="border:1px solid var(--rule);background:var(--sheet);color:var(--ink2);border-radius:2px;padding:6px 11px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="border-color:var(--ink3)">把第 106 条和第 108 条并排给我看</button>
+        </div>
+        <div style="display:flex;gap:9px;align-items:flex-end">
+          <div style="flex:1;min-width:0;border:1px solid var(--rule2);background:var(--sheet);border-radius:2px;padding:10px 13px">
+            <input value="{{ input }}" onChange="{{ setInput }}" placeholder="用你自己的话接着问…" style="width:100%;border:0;background:transparent;color:var(--ink);font:400 13.5px/1.7 'Noto Sans SC',sans-serif;outline:none">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:7px;margin-top:9px;padding-top:8px;border-top:1px solid var(--rule)">
+              <span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);letter-spacing:.08em">限定章节</span>
+              <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:2px 7px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer">V 经济 ×</button>
+              <button type="button" style="border:1px solid var(--rule);background:transparent;color:var(--ink3);border-radius:2px;padding:2px 7px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="color:var(--ink)">＋ 加章节</button>
+              <span style="margin-left:auto;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">已限定 1 / 9 章 · 检索范围 31 条</span>
+            </div>
+          </div>
+          <button type="button" onClick="{{ ask }}" style="flex:0 0 auto;border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:12px 20px;font:500 13.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="opacity:.86">发送</button>
+        </div>
+      </div>
+    </article>
+    </div>
+    </div>
+
+    <div data-open="{{ openRead }}">
+    <div style="max-width:1000px;margin:0 auto;padding:28px 34px 50px">
+      <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--rule3)">
+        <div style="min-width:0">
+          <p style="margin:0 0 7px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">CHAPTER III · 第三章</p>
+          <h1 style="margin:0;font:400 31px/1.3 'Noto Serif SC',serif;letter-spacing:.04em">第二十四條</h1>
+          <p style="margin:6px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink3)">居民的基本权利和义务 · Fundamental Rights and Duties of the Residents</p>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">/article/24 ↗</button>
+          <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:6px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="opacity:.86">加入对比 →</button>
+          <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">记笔记</button>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:34px;margin-top:28px;align-items:flex-start">
+        <div style="flex:1 1 340px;min-width:0;font:400 17px/2.1 'Noto Serif SC',serif;color:var(--ink);text-wrap:pretty">
+          <p style="margin:0 0 18px">Residents of the Hong Kong Special Administrative Region (“Hong Kong residents”) shall include permanent residents and non-permanent residents.</p>
+          <p style="margin:0 0 14px">The permanent residents of the Hong Kong Special Administrative Region shall be:</p>
+          <ol style="list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:11px">
+            <li style="display:flex;gap:12px"><span style="flex:0 0 26px;font:400 13.5px/2.3 'Geist Mono',monospace;color:var(--ink3)">(1)</span><span style="min-width:0">Chinese citizens born in Hong Kong before or after the establishment of the Hong Kong Special Administrative Region;</span></li>
+            <li style="display:flex;gap:12px"><span style="flex:0 0 26px;font:400 13.5px/2.3 'Geist Mono',monospace;color:var(--ink3)">(2)</span><span style="min-width:0">Chinese citizens who have <mark>ordinarily resided in Hong Kong for a continuous period of not less than seven years</mark> before or after the establishment of the Hong Kong Special Administrative Region;</span></li>
+            <li style="display:flex;gap:12px;background:var(--sheet2);padding:6px 10px"><span style="flex:0 0 26px;font:400 13.5px/2.3 'Geist Mono',monospace;color:var(--seal)">*(3)</span><span style="min-width:0">Persons of Chinese nationality born outside Hong Kong of those residents listed in categories (1) and (2);</span></li>
+            <li style="display:flex;gap:12px"><span style="flex:0 0 26px;font:400 13.5px/2.3 'Geist Mono',monospace;color:var(--ink3)">(4)</span><span style="min-width:0">Persons not of Chinese nationality who have entered Hong Kong with valid travel documents, have <mark>ordinarily resided in Hong Kong for a continuous period of not less than seven years</mark> and have taken Hong Kong as their place of permanent residence before or after the establishment of the Hong Kong Special Administrative Region;</span></li>
+            <li style="display:flex;gap:12px"><span style="flex:0 0 26px;font:400 13.5px/2.3 'Geist Mono',monospace;color:var(--ink3)">(5)</span><span style="min-width:0">Persons under 21 years of age born in Hong Kong of those residents listed in category (4) before or after the establishment of the Hong Kong Special Administrative Region; and</span></li>
+            <li style="display:flex;gap:12px"><span style="flex:0 0 26px;font:400 13.5px/2.3 'Geist Mono',monospace;color:var(--ink3)">(6)</span><span style="min-width:0">Persons other than those residents listed in categories (1) to (5), who, before the establishment of the Hong Kong Special Administrative Region, had the right of abode in Hong Kong only.</span></li>
+          </ol>
+          <p style="margin:0 0 18px">The above-mentioned residents shall have the right of abode in the Hong Kong Special Administrative Region and shall be qualified to obtain, in accordance with the laws of the Region, permanent identity cards which state their right of abode.</p>
+          <p style="margin:0">The non-permanent residents of the Hong Kong Special Administrative Region shall be persons who are qualified to obtain Hong Kong identity cards in accordance with the laws of the Region but have no right of abode.</p>
+        </div>
+
+        <aside style="flex:1 1 186px;min-width:0;display:flex;flex-direction:column;gap:18px;border-left:1px solid var(--rule);padding-left:18px">
+          <div>
+            <p style="margin:0 0 5px;font:500 12px/1.5 'Noto Sans SC',sans-serif;letter-spacing:.06em;color:var(--seal)">* 註</p>
+            <p style="margin:0;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">第 (3) 项有释法：1999 年 6 月 26 日全国人大常委会《关于〈基本法〉第二十二条第四款和第二十四条第二款第(三)项的解释》（Instrument 15）。读第 (3) 项时必须一并读它。</p>
+          </div>
+          <div style="border-top:1px solid var(--rule);padding-top:14px">
+            <p style="margin:0 0 5px;font:500 12px/1.5 'Noto Sans SC',sans-serif;letter-spacing:.06em;color:var(--ink4)">語料</p>
+            <p style="margin:0;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink3);text-wrap:pretty">本仓库只入库官方英文本（<span style="font-family:'Geist Mono',monospace;font-size:10px">basic-law.en.json</span>）。界面已双语，条文正文仍是英文 —— 中文本要另建 <span style="font-family:'Geist Mono',monospace;font-size:10px">basic-law.zh.json</span> 并重新 seed。</p>
+          </div>
+          <div style="border-top:1px solid var(--rule);padding-top:14px">
+            <p style="margin:0 0 5px;font:500 12px/1.5 'Noto Sans SC',sans-serif;letter-spacing:.06em;color:var(--ink4)">檢索線索</p>
+            <p style="margin:0;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink3);text-wrap:pretty">80 道学习题里有 3 道指向本条，是全书最集中的一条 —— 也是最常被问到的一条。</p>
+          </div>
+        </aside>
+      </div>
+
+      <div style="margin-top:34px;padding-top:16px;border-top:1px solid var(--rule)">
+        <p style="margin:0 0 11px;font:600 12px/1.4 'Noto Serif SC',serif;letter-spacing:.1em">通往此條的學習題 <span style="font:400 10.5px 'Geist Mono',monospace;letter-spacing:.1em;color:var(--ink4);margin-left:4px">3 QUESTIONS</span></p>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-001</span><span style="min-width:0"><span style="display:block;font:400 13.5px/1.8 'Noto Sans SC',sans-serif">住满七年就能成为永久性居民吗？</span><span style="display:block;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">Who counts as a permanent resident of Hong Kong?</span></span><button type="button" style="margin-left:auto;flex:0 0 auto;border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:4px 9px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">拿去问</button></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-002</span><span style="min-width:0"><span style="display:block;font:400 13.5px/1.8 'Noto Sans SC',sans-serif">在外地出生的孩子有居留权吗？</span><span style="display:block;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">Is my child born outside Hong Kong a permanent resident?</span></span><button type="button" style="margin-left:auto;flex:0 0 auto;border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:4px 9px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">拿去问</button></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-003</span><span style="min-width:0"><span style="display:block;font:400 13.5px/1.8 'Noto Sans SC',sans-serif">非中国籍人士能取得永久性居民身份吗？</span><span style="display:block;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">Can a non-Chinese national become a Hong Kong permanent resident?</span></span><button type="button" style="margin-left:auto;flex:0 0 auto;border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:4px 9px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">拿去问</button></li>
+        </ul>
+      </div>
+
+      <nav style="margin-top:26px;padding-top:14px;border-top:1px solid var(--rule);display:flex;gap:14px;align-items:baseline">
+        <a href="#" style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2)">‹ 第二十三條 <span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink4)">art. 23</span></a>
+        <a href="#" style="margin-left:auto;white-space:nowrap;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2)">第二十五條 <span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink4)">art. 25</span> ›</a>
+      </nav>
+    </div>
+    </div>
+
+    <div data-open="{{ openQuiz }}">
+    <div style="max-width:760px;margin:0 auto;padding:30px 34px 50px">
+      <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:13px;border-bottom:1px solid var(--rule3)">
+        <div>
+          <p style="margin:0 0 6px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">QUIZ · 学习题自测</p>
+          <h1 style="margin:0;font:400 22px/1.4 'Noto Serif SC',serif;letter-spacing:.02em">这道题该落到哪一条？</h1>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <p style="margin:0;font:400 22px/1.2 'Noto Serif SC',serif">07<span style="font-size:12px;color:var(--ink3)"> / 20</span></p>
+          <p style="margin:3px 0 0;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3)">对 5 · 错 1 · 跳过 0</p>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:3px;margin-top:14px">
+        <span style="flex:1;height:4px;background:var(--ok)"></span><span style="flex:1;height:4px;background:var(--ok)"></span><span style="flex:1;height:4px;background:var(--seal)"></span><span style="flex:1;height:4px;background:var(--ok)"></span><span style="flex:1;height:4px;background:var(--ok)"></span><span style="flex:1;height:4px;background:var(--ok)"></span><span style="flex:1;height:4px;background:var(--ink)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span><span style="flex:1;height:4px;background:var(--sunk)"></span>
+      </div>
+
+      <div style="margin-top:30px;border:1px solid var(--rule2);background:var(--sheet);border-radius:2px;padding:26px 26px 22px">
+        <p style="margin:0 0 5px;font:400 10.5px/1.6 'Geist Mono',monospace;letter-spacing:.12em;color:var(--ink4)">qb-005</p>
+        <p style="margin:0 0 6px;font:400 22px/1.7 'Noto Serif SC',serif;text-wrap:pretty">谁有投票权和参选权？</p>
+        <p style="margin:0 0 22px;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink3)">Who has the right to vote and to stand for election?</p>
+
+        <div style="display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+          <button type="button" onClick="{{ pick24 }}" data-quiz="{{ q24 }}" style="text-align:left;border:0;background:var(--paper);padding:13px 15px;cursor:pointer;display:flex;gap:13px;align-items:baseline" style-hover="background:var(--sheet2)">
+            <span style="font:500 12px/1.6 'Geist Mono',monospace;color:var(--ink3);flex:0 0 48px">art 24</span>
+            <span style="font:400 13.5px/1.8 'Noto Sans SC',sans-serif;min-width:0">永久性居民与非永久性居民的定义、居留权</span>
+          </button>
+          <button type="button" onClick="{{ pick25 }}" data-quiz="{{ q25 }}" style="text-align:left;border:0;background:var(--paper);padding:13px 15px;cursor:pointer;display:flex;gap:13px;align-items:baseline" style-hover="background:var(--sheet2)">
+            <span style="font:500 12px/1.6 'Geist Mono',monospace;color:var(--ink3);flex:0 0 48px">art 25</span>
+            <span style="font:400 13.5px/1.8 'Noto Sans SC',sans-serif;min-width:0">香港居民在法律面前一律平等</span>
+          </button>
+          <button type="button" onClick="{{ pick26 }}" data-quiz="{{ q26 }}" style="text-align:left;border:0;background:var(--paper);padding:13px 15px;cursor:pointer;display:flex;gap:13px;align-items:baseline" style-hover="background:var(--sheet2)">
+            <span style="font:500 12px/1.6 'Geist Mono',monospace;color:var(--ink3);flex:0 0 48px">art 26</span>
+            <span style="font:400 13.5px/1.8 'Noto Sans SC',sans-serif;min-width:0">永久性居民依法享有选举权和被选举权</span>
+          </button>
+          <button type="button" onClick="{{ pick27 }}" data-quiz="{{ q27 }}" style="text-align:left;border:0;background:var(--paper);padding:13px 15px;cursor:pointer;display:flex;gap:13px;align-items:baseline" style-hover="background:var(--sheet2)">
+            <span style="font:500 12px/1.6 'Geist Mono',monospace;color:var(--ink3);flex:0 0 48px">art 27</span>
+            <span style="font:400 13.5px/1.8 'Noto Sans SC',sans-serif;min-width:0">言论、新闻、出版、结社、集会、游行、示威自由</span>
+          </button>
+        </div>
+
+        <div data-open="{{ quizOpen }}" data-anim style="margin-top:20px;padding-top:18px;border-top:1px solid var(--rule)">
+          <p data-tone="{{ verdictTone }}" style="margin:0 0 11px;font:500 13.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ok)">{{ quizVerdict }}</p>
+          <p style="margin:0 0 12px;padding:13px 15px;background:var(--okbg);border-left:2px solid var(--ok);font:400 17px/2 'Noto Serif SC',serif;color:var(--ink);text-wrap:pretty">Permanent residents of the Hong Kong Special Administrative Region shall have the right to vote and the right to stand for election in accordance with law.</p>
+          <p style="margin:0 0 16px;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">要点：第 26 条只把这两项权利给「永久性居民」，而谁是永久性居民完全由第 24 条界定 —— 所以这两条必须连读。第 25 条讲的是法律面前平等，不含参选资格。</p>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="opacity:.86">下一题 →</button>
+            <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">读第 26 条全文</button>
+            <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">和第 24 条对比</button>
+            <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:7px 13px;font:400 12px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">记入笔记</button>
+          </div>
+        </div>
+
+        <p data-open="{{ quizHint }}" style="margin:18px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink4)">选一条，然后看原文对不对 —— 题库里 80 道题的正确条文就是离线评测的标准答案。</p>
+      </div>
+    </div>
+    </div>
+
+    <div data-open="{{ openNotes }}">
+    <div style="max-width:880px;margin:0 auto;padding:30px 34px 50px">
+      <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:13px;border-bottom:1px solid var(--rule3)">
+        <div>
+          <p style="margin:0 0 6px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">NOTES · 12 条 · 涉及 9 个条文</p>
+          <h1 style="margin:0;font:400 22px/1.4 'Noto Serif SC',serif;letter-spacing:.02em">筆記本</h1>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">导出 Markdown</button>
+          <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">导出 JSON</button>
+          <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:6px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="opacity:.86">＋ 新笔记</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:16px">
+        <input placeholder="搜索笔记正文、条文编号或标签…" style="flex:1 1 240px;min-width:0;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);border-radius:2px;padding:8px 11px;font:400 12px/1.6 'Noto Sans SC',sans-serif;outline:none" style-focus="border-color:var(--ink3)">
+        <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer">全部 12</button>
+        <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">居民身份 4</button>
+        <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">经济 3</button>
+        <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">释法 2</button>
+        <button type="button" style="border:1px solid var(--sealrule);background:var(--sealbg);color:var(--seal);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer">待核对 1</button>
+      </div>
+
+      <div style="margin-top:22px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:0">
+          <div style="flex:0 0 78px;padding-top:2px"><span style="font:500 13.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art. 24</span></div>
+          <div style="flex:1;min-width:0;border-left:1px solid var(--rule);padding-left:18px;display:flex;flex-direction:column;gap:9px">
+            <div style="border:1px solid var(--rule);background:var(--sheet);border-radius:2px;padding:14px 16px">
+              <p style="margin:0 0 9px;font:400 13.5px/1.95 'Noto Sans SC',sans-serif;color:var(--ink);text-wrap:pretty">「连续七年」只写在第 (2) 和第 (4) 项里 —— 第 (1) 项是在港出生的中国公民，不需要七年。别把七年当成所有类别的通用条件。</p>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">居民身份</span>
+                <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">七年</span>
+                <span style="margin-left:auto;min-width:0;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">9月12日 · 来自会话「七年与永久性居民身份」</span>
+              </div>
+            </div>
+            <div style="border:1px solid var(--rule);background:var(--sheet);border-radius:2px;padding:14px 16px">
+              <p style="margin:0 0 9px;font:400 13.5px/1.95 'Noto Sans SC',sans-serif;color:var(--ink);text-wrap:pretty">第 (3) 项有 1999 年释法，考试和实务里都是重点。原文里那个 <span style="color:var(--seal)">*</span> 号就是脚注锚点。</p>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">释法</span>
+                <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">9月12日 · 手动添加</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0">
+          <div style="flex:0 0 78px;padding-top:2px"><span style="font:500 13.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art. 114</span></div>
+          <div style="flex:1;min-width:0;border-left:1px solid var(--rule);padding-left:18px">
+            <div style="border:1px solid var(--rule);background:var(--sheet);border-radius:2px;padding:14px 16px">
+              <p style="margin:0 0 9px;font:400 13.5px/1.95 'Noto Sans SC',sans-serif;color:var(--ink);text-wrap:pretty">自由港 = 不征关税；但 <span style="font-family:'Noto Serif SC',serif">unless otherwise prescribed by law</span> 留了口子，烟酒燃油的应课税品税是普通立法征的，不算关税。</p>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">经济</span>
+                <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">关税</span>
+                <span style="margin-left:auto;min-width:0;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">今天 · 来自会话「关税与自由港」</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0">
+          <div style="flex:0 0 78px;padding-top:2px"><span style="font:500 13.5px/1.5 'Geist Mono',monospace;color:var(--seal)">art. 106</span></div>
+          <div style="flex:1;min-width:0;border-left:1px solid var(--sealrule);padding-left:18px">
+            <div style="border:1px solid var(--sealrule);background:var(--sealbg);border-radius:2px;padding:14px 16px">
+              <p style="margin:0 0 9px;font:400 13.5px/1.95 'Noto Sans SC',sans-serif;color:var(--ink);text-wrap:pretty">这条是那次回答里<span style="color:var(--seal)">未经查证</span>的引用。我自己读了原文：财政独立、收入不上缴、中央不在港征税 —— 内容站得住，但当时的回答并没有依据。已标记为已核对。</p>
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--seal);border:1px solid var(--seal);border-radius:2px;padding:1px 6px">待核对 → 已核对</span>
+                <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">今天 · 由引用审计生成</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <div data-open="{{ openEval }}">
+    <div style="max-width:820px;margin:0 auto;padding:30px 34px 50px">
+      <p style="margin:0 0 8px;font:500 12px/1.6 'Noto Sans SC',sans-serif;letter-spacing:.09em;color:var(--ink4)">EVAL · 80 道留出改写题</p>
+      <h1 style="margin:0 0 14px;font:400 31px/1.45 'Noto Serif SC',serif;letter-spacing:.02em;text-wrap:pretty">回答的上限，是检索有没有把对的条文交上来。</h1>
+      <p style="margin:0 0 26px;max-width:620px;font:400 13.5px/2 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">每道学习题带两个改写：改写一是 <span style="font-family:'Geist Mono',monospace;font-size:12px">dev</span>，停用词和标签是在它上面调的；改写二是 <span style="font-family:'Geist Mono',monospace;font-size:12px">test</span>，调参期间从未看过。原题本身从不作为查询。<span style="font-family:'Geist Mono',monospace;font-size:12px">primary@k</span> = 题库列出的第一条在前 k 名内。</p>
+
+      <div style="display:flex;gap:1px;background:var(--rule);margin-bottom:30px;flex-wrap:wrap">
+        <div style="flex:1 1 180px;background:var(--sheet);padding:17px 19px;min-width:0">
+          <p style="margin:0;font:400 31px/1.1 'Noto Serif SC',serif">88.8<span style="font-size:16px;color:var(--ink3)">%</span></p>
+          <p style="margin:6px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink2)">三路融合 · test 集 primary@5<br><span style="color:var(--ink4)">该被引用的那个数字</span></p>
+        </div>
+        <div style="flex:1 1 180px;background:var(--sheet);padding:17px 19px;min-width:0">
+          <p style="margin:0;font:400 31px/1.1 'Noto Serif SC',serif">+8.8</p>
+          <p style="margin:6px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink2)">相对「题库 + 全文」流水线<br><span style="color:var(--ink4)">加上语义路换来的</span></p>
+        </div>
+        <div style="flex:1 1 180px;background:var(--sheet);padding:17px 19px;min-width:0">
+          <p style="margin:0;font:400 31px/1.1 'Noto Serif SC',serif">7.5</p>
+          <p style="margin:6px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink2)">dev 与 test 的落差（点）<br><span style="color:var(--ink4)">原先是 15.0 —— 过拟合的大小</span></p>
+        </div>
+      </div>
+
+      <section style="margin-bottom:34px">
+        <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:11px;border-bottom:1px solid var(--rule3)">
+          <h2 style="margin:0;font:600 13.5px/1.4 'Noto Serif SC',serif;letter-spacing:.1em">八种策略，同一把尺</h2>
+          <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">primary@5 · test · n=80</span>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);min-width:0">strict FTS</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:24%;background:var(--ink4)"></span></span><span style="flex:0 0 48px;text-align:right;font:400 12px/1.5 'Geist Mono',monospace;color:var(--ink3)">23.8%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);min-width:0">loose FTS（去套话）</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:65%;background:var(--ink4)"></span></span><span style="flex:0 0 48px;text-align:right;font:400 12px/1.5 'Geist Mono',monospace;color:var(--ink3)">65.0%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);min-width:0">smart FTS（strict→loose）</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:67.5%;background:var(--ink4)"></span></span><span style="flex:0 0 48px;text-align:right;font:400 12px/1.5 'Geist Mono',monospace;color:var(--ink3)">67.5%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">题库（词法）</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:72.5%;background:var(--ink3)"></span></span><span style="flex:0 0 48px;text-align:right;font:400 12px/1.5 'Geist Mono',monospace;color:var(--ink2)">72.5%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">题库 → smart FTS</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:80%;background:var(--ink3)"></span></span><span style="flex:0 0 48px;text-align:right;font:400 12px/1.5 'Geist Mono',monospace;color:var(--ink2)">80.0%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">语义（题库向量）</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:73.8%;background:var(--ink3)"></span></span><span style="flex:0 0 48px;text-align:right;font:400 12px/1.5 'Geist Mono',monospace;color:var(--ink2)">73.8%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:500 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink);min-width:0">语义（条文向量）</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:86.3%;background:var(--ink2)"></span></span><span style="flex:0 0 48px;text-align:right;font:500 12px/1.5 'Geist Mono',monospace;color:var(--ink)">86.3%</span></div>
+          <div style="display:flex;align-items:center;gap:12px"><span style="flex:0 0 176px;font:500 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink);min-width:0">RRF 融合（题库×2 + FTS + 语义）</span><span style="flex:1;height:14px;background:var(--sunk);min-width:0"><span style="display:block;height:14px;width:88.8%;background:var(--ink)"></span></span><span style="flex:0 0 48px;text-align:right;font:500 12px/1.5 'Geist Mono',monospace;color:var(--ink)">88.8%</span></div>
+        </div>
+      </section>
+
+      <section style="margin-bottom:34px;display:flex;gap:1px;background:var(--rule);flex-wrap:wrap">
+        <div style="flex:1 1 300px;background:var(--sheet);padding:18px 20px;min-width:0">
+          <p style="margin:0 0 8px;font:500 13.5px/1.6 'Noto Sans SC',sans-serif">一个 23 MB 的模型赢了整条手写流水线。</p>
+          <p style="margin:0;font:400 12px/1.95 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">语义检索单路就有 86.3%，而「80 道手写题库 + 调过参的词法检索」只有 80.0%。这个模型从没见过这部法律，也没有调过任何参数。把这行写在页面上，比把它藏在 README 里更诚实。</p>
+        </div>
+        <div style="flex:1 1 300px;background:var(--sheet);padding:18px 20px;min-width:0">
+          <p style="margin:0 0 8px;font:500 13.5px/1.6 'Noto Sans SC',sans-serif">dev 上的 95% 是假的，融合把这个谎收窄了。</p>
+          <p style="margin:0;font:400 12px/1.95 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">旧流水线 dev 95.0% / test 80.0%，差 15 点 —— 那 15 点就是在 dev 上调参调出来的。融合后是 96.3% / 88.8%，差 7.5 点。好看的数字几乎没动，诚实的数字动了很多。</p>
+        </div>
+      </section>
+
+      <section style="margin-bottom:34px">
+        <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:11px;border-bottom:1px solid var(--rule3)">
+          <h2 style="margin:0;font:600 13.5px/1.4 'Noto Serif SC',serif;letter-spacing:.1em">还答不对的 7 道</h2>
+          <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">test · 融合策略</span>
+          <span style="margin-left:auto;min-width:0;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">多数是「正解不止一条」的题 —— any@5 仍有 92.5%</span>
+        </div>
+        <ul style="list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-015</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“Can I sue the government or its officials?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">35</span> · 返回 9 48 73 64 105</span></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-021</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“What duties do residents have?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">42</span> · 返回 99 41 24 79 21</span></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-030</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“Does the Chief Executive have to follow ExCo's advice?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">54</span> · 返回 47 45 53 56 50</span></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-042</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“Are the old procedural rights in criminal cases kept?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">87</span> · 返回 35 24 86 39 63</span></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-058</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“Can foreign warships enter Hong Kong ports freely?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">125</span> · 返回 114 101 126 112 67</span></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-063</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“Can Hong Kong stay in international organisations China is not a member of?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">153</span> · 返回 152 39 67 21 61</span></li>
+          <li style="background:var(--sheet);padding:10px 13px;display:flex;gap:11px;align-items:baseline;flex-wrap:wrap"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);flex:0 0 52px">qb-078</span><span style="flex:1 1 240px;min-width:0;font:400 13.5px/1.7 'Noto Serif SC',serif">“Is Hong Kong directly under the Central People's Government?”</span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink2)">想要 <span style="color:var(--ok)">2</span> · 返回 22 106 14 13 21</span></li>
+        </ul>
+      </section>
+
+      <section style="margin-bottom:30px">
+        <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:11px;border-bottom:1px solid var(--rule3)">
+          <h2 style="margin:0;font:600 13.5px/1.4 'Noto Serif SC',serif;letter-spacing:.1em">读者打的分</h2>
+          <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">0–5 · 每（答案, 条文）一票</span>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:0 0 auto">
+            <p style="margin:0;font:400 31px/1.1 'Noto Serif SC',serif">3.7<span style="font-size:14px;color:var(--ink3)"> / 5</span></p>
+            <p style="margin:5px 0 0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">34 次判断的均值</p>
+          </div>
+          <div style="flex:1 1 280px;min-width:0;display:flex;align-items:flex-end;gap:6px;height:78px">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:100%;height:7%;background:var(--ink4)"></span><span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink4)">0</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:100%;height:11%;background:var(--ink4)"></span><span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink4)">1</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:100%;height:19%;background:var(--ink4)"></span><span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink4)">2</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:100%;height:41%;background:var(--ink3)"></span><span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink3)">3</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:100%;height:82%;background:var(--ink2)"></span><span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink2)">4</span></div>
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:100%;height:100%;background:var(--ink)"></span><span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink)">5</span></div>
+          </div>
+        </div>
+        <p style="margin:16px 0 0;max-width:620px;font:400 12px/1.95 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">上面的基准只回答一个问题：题库认为正确的那一条，检索找到了吗。读者的 0–5 分回答另一个问题：它到底有没有用。后者没有任何自动指标能代替 —— 两个数字放在同一页，才是这一页存在的意义。</p>
+      </section>
+
+      <div style="border:1px solid var(--sealrule);background:var(--sealbg);border-radius:2px;padding:15px 17px">
+        <p style="margin:0 0 6px;font:500 12px/1.6 'Noto Sans SC',sans-serif;color:var(--seal)">线上这一份没有跑语义路。</p>
+        <p style="margin:0;font:400 12px/1.9 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">句向量由服务进程内的本地 23 MB 模型计算，在 serverless 上这笔成本会砸在冷启动后的第一个请求上，所以这里设了 <span style="font-family:'Geist Mono',monospace;font-size:11px">DENSE_RETRIEVAL=off</span>：线上真实表现是「题库 + 全文」那一行，<span style="color:var(--seal)">80.0%</span> 而不是 88.8%。上面的表是本地开着语义路测的，<span style="font-family:'Geist Mono',monospace;font-size:11px">npm run embed &amp;&amp; npm run eval:retrieval</span> 在任何 clone 上都能无 key 复现。</p>
+      </div>
+    </div>
+    </div>
+  </main>
+
+  <aside data-open="{{ rightOpen }}" style="flex:0 1 340px;min-width:0;max-width:420px;padding:22px 22px 34px;background:var(--sheet);position:sticky;top:var(--hdr);align-self:flex-start;max-height:calc(100vh - var(--hdr));overflow-y:auto;scrollbar-width:thin">
+    <div data-open="{{ openAsk }}">
+    <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--rule3)">
+      <h2 style="margin:0;flex:0 0 auto;white-space:nowrap;font:600 13.5px/1.3 'Noto Serif SC',serif;letter-spacing:.12em">證據欄</h2>
+      </div>
+
+    <section data-open="{{ traceOpen }}" style="margin-top:18px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:11px">
+        <h3 style="margin:0;font:500 12px/1.4 'Noto Sans SC',sans-serif">检索过程</h3>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">3 paths → RRF k=60</span>
+        <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">141 ms</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div data-lane="{{ lane1 }}" style="border:1px solid var(--rule);background:var(--paper);border-radius:2px;padding:9px 11px;transition:opacity .25s">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:6px">
+            <span style="font:500 10.5px/1.4 'Geist Mono',monospace;color:var(--ink);letter-spacing:.06em">qb</span>
+            <span style="font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink2)">学习题库 · 80 题，词法 + 向量</span>
+            <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">2 hits</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);flex:0 0 12px">1</span><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art 114</span><span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">qb-062 关税 / 自由港</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">.81</span></div>
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);flex:0 0 12px">2</span><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art 108</span><span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">qb-061 香港自己定税吗</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">.34</span></div>
+          </div>
+        </div>
+
+        <div data-lane="{{ lane2 }}" style="border:1px solid var(--rule);background:var(--paper);border-radius:2px;padding:9px 11px;transition:opacity .25s">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:6px">
+            <span style="font:500 10.5px/1.4 'Geist Mono',monospace;color:var(--ink);letter-spacing:.06em">fts</span>
+            <span style="font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink2)">全文检索 · strict 空 → loose 去套话</span>
+            <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">3 hits</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);flex:0 0 12px">1</span><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art 114</span><span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">free port · tariff</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">.42</span></div>
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);flex:0 0 12px">2</span><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art 108</span><span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">taxation · tax rates</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">.31</span></div>
+            <div style="display:flex;align-items:baseline;gap:7px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);flex:0 0 12px">3</span><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink)">art 110</span><span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">monetary · financial</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">.18</span></div>
+          </div>
+        </div>
+
+        <div data-lane="{{ lane3 }}" style="border:1px solid var(--rule);background:var(--paper);border-radius:2px;padding:9px 11px;transition:opacity .25s">
+          <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:6px">
+            <span style="font:500 10.5px/1.4 'Geist Mono',monospace;color:var(--ink3);letter-spacing:.06em">vec</span>
+            <span style="font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3)">语义向量 · 384 维，本地 23 MB 模型</span>
+            <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">off</span>
+          </div>
+          <p style="margin:0;font:400 10.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink4)">本次部署 <span style="font-family:'Geist Mono',monospace">DENSE_RETRIEVAL=off</span> —— serverless 冷启动要吃掉模型加载成本。融合因此降级为 qb + fts 两路，primary@5 由 88.8% 退到 80.0%。</p>
+        </div>
+      </div>
+
+      <div data-lane="{{ lane4 }}" style="margin-top:9px;border:1px solid var(--rule3);background:var(--paper);border-radius:2px;padding:11px 12px;transition:opacity .25s">
+        <div style="display:flex;align-items:baseline;gap:7px;margin-bottom:8px">
+          <span style="font:500 10.5px/1.4 'Geist Mono',monospace;letter-spacing:.06em">RRF</span>
+          <span style="font:400 12px/1.4 'Noto Sans SC',sans-serif;color:var(--ink2)">倒数排名融合 · 题库权重 ×2</span>
+          <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">top 4 of 4</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink);flex:0 0 12px">1</span><span style="font:500 12px/1.5 'Geist Mono',monospace;flex:0 0 52px">art 114</span><span style="flex:1;height:6px;background:var(--sunk);min-width:0"><span style="display:block;height:6px;width:100%;background:var(--ink)"></span></span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);flex:0 0 42px;text-align:right">.049</span><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ok);flex:0 0 52px;text-align:right">qb·fts</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink);flex:0 0 12px">2</span><span style="font:500 12px/1.5 'Geist Mono',monospace;flex:0 0 52px">art 108</span><span style="flex:1;height:6px;background:var(--sunk);min-width:0"><span style="display:block;height:6px;width:61%;background:var(--ink2)"></span></span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);flex:0 0 42px;text-align:right">.030</span><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3);flex:0 0 52px;text-align:right">qb·fts</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink);flex:0 0 12px">3</span><span style="font:500 12px/1.5 'Geist Mono',monospace;flex:0 0 52px">art 110</span><span style="flex:1;height:6px;background:var(--sunk);min-width:0"><span style="display:block;height:6px;width:33%;background:var(--ink3)"></span></span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);flex:0 0 42px;text-align:right">.016</span><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3);flex:0 0 52px;text-align:right">fts</span></div>
+        </div>
+        <p style="margin:9px 0 0;padding-top:8px;border-top:1px solid var(--rule);font:400 10.5px/1.7 'Noto Sans SC',sans-serif;color:var(--ink3)">融合后只有第 1 名被 <span style="font-family:'Geist Mono',monospace">get_article</span> 完整读取 —— 下面的卡片按「读过 / 只检索到 / 未经查证」分三级列出。</p>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+        <h3 style="margin:0;font:500 12px/1.4 'Noto Sans SC',sans-serif">引用条文</h3>
+        <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">4 articles</span>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;padding:9px 11px;background:var(--paper);border:1px solid var(--rule);border-radius:2px">
+        <span style="display:flex;align-items:center;gap:6px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)"><span style="width:9px;height:9px;background:var(--ok);border-radius:1px"></span>读过全文</span>
+        <span style="display:flex;align-items:center;gap:6px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)"><span style="width:9px;height:9px;border:1px solid var(--rule2);border-radius:1px"></span>只检索到</span>
+        <span style="display:flex;align-items:center;gap:6px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)"><span style="width:9px;height:9px;background:var(--seal);border-radius:1px"></span>未经查证</span>
+      </div>
+
+      <div data-hot="{{ c114hot }}" style="border:1px solid var(--okrule);border-left:3px solid var(--ok);background:var(--paper);border-radius:2px;margin-bottom:9px">
+        <button type="button" onClick="{{ toggle114 }}" style="width:100%;text-align:left;border:0;background:transparent;padding:11px 13px;cursor:pointer;display:flex;align-items:baseline;gap:9px">
+          <span style="font:500 13.5px/1.4 'Geist Mono',monospace;color:var(--ink)">art. 114</span>
+          <span style="font:400 10.5px/1.4 'Noto Sans SC',sans-serif;color:var(--ok);border:1px solid var(--okrule);background:var(--okbg);border-radius:2px;padding:1px 6px">读过全文</span>
+          <span style="font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">qb·fts · rrf #1</span>
+          <span style="margin-left:auto;min-width:0;font:400 12px/1.4 'Geist Mono',monospace;color:var(--ink3)">{{ c114caret }}</span>
+        </button>
+        <div data-open="{{ c114open }}" style="padding:0 13px 13px">
+          <p style="margin:0 0 9px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);letter-spacing:.06em">CHAPTER V · 第一节 公共财政、货币、贸易、工商业</p>
+          <p style="margin:0 0 10px;padding:10px 12px;background:var(--sheet2);border-left:2px solid var(--rule2);font:400 13.5px/2 'Noto Serif SC',serif;color:var(--ink);text-wrap:pretty">The Hong Kong Special Administrative Region shall maintain the status of a <mark>free port</mark> and shall not impose any <mark>tariff</mark> unless otherwise prescribed by law.</p>
+          <div style="display:flex;gap:9px;align-items:flex-start;margin-bottom:11px">
+            <span style="flex:0 0 auto;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink4);letter-spacing:.06em">MATCHED</span>
+            <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">命中学习题 <span style="font-family:'Geist Mono',monospace;font-size:10.5px;color:var(--ink3)">qb-062</span>「我带进香港的货物需要缴关税吗？」—— 检索是靠这道题把你的口语问法接到条文上的，不是靠关键词。</p>
+          </div>
+          <div style="border-top:1px solid var(--rule);padding-top:11px">
+            <p style="margin:0 0 8px;font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2)">这一条对你的问题有用吗？<span style="font:400 10.5px 'Noto Sans SC',sans-serif;color:var(--ink4);margin-left:5px">离线评测只知道题库认为哪条对；这一格只有你能回答。</span></p>
+            <div style="display:flex;align-items:stretch;gap:0;border:1px solid var(--rule2);border-radius:2px;overflow:hidden">
+              <button type="button" onClick="{{ rate0 }}" data-tabsel="{{ r0 }}" style="flex:1;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);padding:9px 0;font:400 12px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">0</button>
+              <button type="button" onClick="{{ rate1 }}" data-tabsel="{{ r1 }}" style="flex:1;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);padding:9px 0;font:400 12px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">1</button>
+              <button type="button" onClick="{{ rate2 }}" data-tabsel="{{ r2 }}" style="flex:1;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);padding:9px 0;font:400 12px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">2</button>
+              <button type="button" onClick="{{ rate3 }}" data-tabsel="{{ r3 }}" style="flex:1;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);padding:9px 0;font:400 12px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">3</button>
+              <button type="button" onClick="{{ rate4 }}" data-tabsel="{{ r4 }}" style="flex:1;border:0;border-right:1px solid var(--rule);background:transparent;color:var(--ink2);padding:9px 0;font:400 12px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">4</button>
+              <button type="button" onClick="{{ rate5 }}" data-tabsel="{{ r5 }}" style="flex:1;border:0;background:transparent;color:var(--ink2);padding:9px 0;font:400 12px/1 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">5</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:5px">
+              <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink4)">0 完全不相关</span>
+              <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink3)">{{ rateState }}</span>
+              <span style="font:400 10.5px/1.5 'Noto Sans SC',sans-serif;color:var(--ink4)">5 正中要点</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">
+            <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 9px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">读整条 ↗</button>
+            <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 9px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">加入对比</button>
+            <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:5px 9px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">为这条记笔记</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--rule);background:var(--paper);border-radius:2px;margin-bottom:9px">
+        <button type="button" onClick="{{ toggle108 }}" style="width:100%;text-align:left;border:0;background:transparent;padding:11px 13px;cursor:pointer;display:flex;align-items:baseline;gap:9px">
+          <span style="font:500 13.5px/1.4 'Geist Mono',monospace;color:var(--ink2)">art. 108</span>
+          <span style="font:400 10.5px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">只检索到</span>
+          <span style="font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">qb·fts · rrf #2</span>
+          <span style="margin-left:auto;min-width:0;font:400 12px/1.4 'Geist Mono',monospace;color:var(--ink3)">{{ c108caret }}</span>
+        </button>
+        <div data-open="{{ c108open }}" style="padding:0 13px 13px">
+          <p style="margin:0 0 9px;font:400 10.5px/1.8 'Noto Sans SC',sans-serif;color:var(--ink3)">检索把它排到第 2，但本次回答没有读它的全文，也没有引用它 —— 列在这里是为了让你知道「还有什么被找到了却没被用」。</p>
+          <p style="margin:0;padding:10px 12px;background:var(--sheet2);border-left:2px solid var(--rule2);font:400 13.5px/1.95 'Noto Serif SC',serif;color:var(--ink2)">The Hong Kong Special Administrative Region shall practise an independent taxation system. …enact laws on its own concerning types of taxes, tax rates, tax reductions, allowances and exemptions, and other matters of taxation.</p>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--rule);background:var(--paper);border-radius:2px;margin-bottom:9px">
+        <button type="button" onClick="{{ toggle110 }}" style="width:100%;text-align:left;border:0;background:transparent;padding:11px 13px;cursor:pointer;display:flex;align-items:baseline;gap:9px">
+          <span style="font:500 13.5px/1.4 'Geist Mono',monospace;color:var(--ink2)">art. 110</span>
+          <span style="font:400 10.5px/1.4 'Noto Sans SC',sans-serif;color:var(--ink3);border:1px solid var(--rule2);border-radius:2px;padding:1px 6px">只检索到</span>
+          <span style="font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">fts · rrf #3</span>
+          <span style="margin-left:auto;min-width:0;font:400 12px/1.4 'Geist Mono',monospace;color:var(--ink3)">{{ c110caret }}</span>
+        </button>
+        <div data-open="{{ c110open }}" style="padding:0 13px 13px">
+          <p style="margin:0;padding:10px 12px;background:var(--sheet2);border-left:2px solid var(--rule2);font:400 13.5px/1.95 'Noto Serif SC',serif;color:var(--ink2)">The monetary and financial systems of the Hong Kong Special Administrative Region shall be prescribed by law. …formulate monetary and financial policies, safeguard the free operation of financial business and financial markets…</p>
+          <p style="margin:8px 0 0;font:400 10.5px/1.8 'Noto Sans SC',sans-serif;color:var(--ink4)">loose 全文检索命中 monetary / financial，与关税问题只是同章邻近 —— 这类噪声是 loose 路径的代价，融合排序把它压到第 3。</p>
+        </div>
+      </div>
+
+      <div data-hot="{{ c106hot }}" data-open="{{ flagOpen }}" style="border:1px solid var(--sealrule);border-left:3px solid var(--seal);background:var(--sealbg);border-radius:2px">
+        <button type="button" onClick="{{ toggle106 }}" style="width:100%;text-align:left;border:0;background:transparent;padding:11px 13px;cursor:pointer;display:flex;align-items:baseline;gap:9px">
+          <span style="font:500 13.5px/1.4 'Geist Mono',monospace;color:var(--seal)">art. 106</span>
+          <span style="font:500 10.5px/1.4 'Noto Sans SC',sans-serif;color:var(--seal);border:1px solid var(--seal);border-radius:2px;padding:1px 6px">未经查证 ⚠</span>
+          <span style="font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">no tool returned it</span>
+          <span style="margin-left:auto;min-width:0;font:400 12px/1.4 'Geist Mono',monospace;color:var(--seal)">{{ c106caret }}</span>
+        </button>
+        <div data-open="{{ c106open }}" style="padding:0 13px 13px">
+          <p style="margin:0 0 10px;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--seal);text-wrap:pretty">答案最后一句点名了它，但三路召回都没有返回过第 106 条 —— 编号出自模型记忆。这里不替它遮掩，也不替它背书：原文放在下面，你自己核。</p>
+          <p style="margin:0;padding:10px 12px;background:var(--paper);border-left:2px solid var(--seal);font:400 13.5px/1.95 'Noto Serif SC',serif;color:var(--ink)">The Hong Kong Special Administrative Region shall have independent finances. …shall use its financial revenues exclusively for its own purposes, and they shall not be handed over to the Central People's Government. The Central People's Government shall not levy taxes in the Hong Kong Special Administrative Region.</p>
+          <p style="margin:9px 0 0;font:400 10.5px/1.8 'Noto Sans SC',sans-serif;color:var(--ink3)">读完之后：内容确实支持那句话，但这次回答没有为它提供依据。这个区分是整个产品的立足点。</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:26px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:9px">
+        <h3 style="margin:0;font:500 12px/1.4 'Noto Sans SC',sans-serif">工具日志</h3>
+        <span style="font:400 10.5px/1 'Geist Mono',monospace;color:var(--ink4)">3 calls · 257 ms</span>
+        <button type="button" onClick="{{ toggleJson }}" style="margin-left:auto;border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:3px 8px;font:400 10.5px/1.5 'Geist Mono',monospace;cursor:pointer" style-hover="background:var(--sheet2)">{{ jsonLabel }}</button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+        <div style="background:var(--paper);padding:9px 11px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:500 10.5px/1.4 'Geist Mono',monospace;color:var(--ink);border:1px solid var(--rule2);border-radius:2px;padding:1px 4px">mcp</span>
+            <span style="font:500 12px/1.4 'Geist Mono',monospace;color:var(--ink)">find_questions</span>
+            <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">82 ms</span>
+          </div>
+          <p style="margin:4px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink2)">把口语问法比对 80 道学习题，命中 2 道：qb-062（.81）、qb-061（.34）。</p>
+          <pre data-open="{{ jsonOpen }}" style="margin:7px 0 0;padding:9px;background:var(--sunk);border-radius:2px;font:400 10.5px/1.65 'Geist Mono',monospace;color:var(--ink2);white-space:pre-wrap;overflow-x:auto">{ "query": "Do I have to pay customs duty on goods I bring into Hong Kong?", "limit": 3 }
+→ { "questions": [ { "id": "qb-062", "articles": [114], "score": 0.81 },
+                   { "id": "qb-061", "articles": [108], "score": 0.34 } ] }</pre>
+        </div>
+        <div style="background:var(--paper);padding:9px 11px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:500 10.5px/1.4 'Geist Mono',monospace;color:var(--ink);border:1px solid var(--rule2);border-radius:2px;padding:1px 4px">mcp</span>
+            <span style="font:500 12px/1.4 'Geist Mono',monospace;color:var(--ink)">search_articles</span>
+            <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">141 ms</span>
+          </div>
+          <p style="margin:4px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink2)">两路召回 5 条，RRF 融合后取前 3；限定章节 V 让 SQL 只扫 31 条。</p>
+          <pre data-open="{{ jsonOpen }}" style="margin:7px 0 0;padding:9px;background:var(--sunk);border-radius:2px;font:400 10.5px/1.65 'Geist Mono',monospace;color:var(--ink2);white-space:pre-wrap;overflow-x:auto">{ "query": "customs duty goods bring in", "chapters": ["V"], "limit": 5 }
+→ { "hits": [ { "article": 114, "found_by": ["question bank","full-text"], "rrf": 0.049 },
+              { "article": 108, "found_by": ["question bank","full-text"], "rrf": 0.030 },
+              { "article": 110, "found_by": ["full-text"], "rrf": 0.016 } ] }</pre>
+        </div>
+        <div style="background:var(--paper);padding:9px 11px">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font:500 10.5px/1.4 'Geist Mono',monospace;color:var(--ink);border:1px solid var(--rule2);border-radius:2px;padding:1px 4px">mcp</span>
+            <span style="font:500 12px/1.4 'Geist Mono',monospace;color:var(--ink)">get_article</span>
+            <span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.4 'Geist Mono',monospace;color:var(--ink4)">34 ms</span>
+          </div>
+          <p style="margin:4px 0 0;font:400 12px/1.7 'Noto Sans SC',sans-serif;color:var(--ink2)">读取第 114 条全文 —— 这一次调用，正是它的引用能标成绿色的唯一理由。</p>
+          <pre data-open="{{ jsonOpen }}" style="margin:7px 0 0;padding:9px;background:var(--sunk);border-radius:2px;font:400 10.5px/1.65 'Geist Mono',monospace;color:var(--ink2);white-space:pre-wrap;overflow-x:auto">{ "number": 114 }
+→ { "article": 114, "citation": "Basic Law, art. 114", "chapter": "V", "notes": [] }</pre>
+        </div>
+      </div>
+      <p style="margin:10px 0 0;font:400 10.5px/1.8 'Noto Sans SC',sans-serif;color:var(--ink4)">每个回合的 UI parts、工具调用（输入 / 输出 / mcp·local）与引用条文都落在 PostgreSQL 里，事后可逐条复核。</p>
+    </section>
+    </div>
+
+    <div data-open="{{ openRead }}">
+    <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--rule3)">
+      <h2 style="margin:0;font:600 13.5px/1.3 'Noto Serif SC',serif;letter-spacing:.12em">對照</h2>
+      <button type="button" style="margin-left:auto;border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:3px 8px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">换一条</button>
+    </div>
+
+    <div style="margin-top:16px;border:1px solid var(--rule2);background:var(--paper);border-radius:2px;padding:13px 14px">
+      <p style="margin:0 0 7px;font:500 12px/1.5 'Geist Mono',monospace">art. 24 <span style="font:400 10.5px 'Noto Sans SC',sans-serif;color:var(--ink3);margin-left:4px">在读</span></p>
+      <p style="margin:0;font:400 13.5px/1.95 'Noto Serif SC',serif;color:var(--ink2);text-wrap:pretty">…permanent residents shall be: (1) Chinese citizens born in Hong Kong… (2) …<mark>not less than seven years</mark>… (4) Persons not of Chinese nationality who… have taken Hong Kong as their place of permanent residence…</p>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:9px;margin:11px 0">
+      <span style="flex:1;height:1px;background:var(--rule)"></span>
+      <span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4);letter-spacing:.1em">定义 → 适用</span>
+      <span style="flex:1;height:1px;background:var(--rule)"></span>
+    </div>
+
+    <div style="border:1px solid var(--rule2);background:var(--paper);border-radius:2px;padding:13px 14px">
+      <p style="margin:0 0 7px;font:500 12px/1.5 'Geist Mono',monospace">art. 26</p>
+      <p style="margin:0;font:400 13.5px/1.95 'Noto Serif SC',serif;color:var(--ink);text-wrap:pretty"><mark>Permanent residents</mark> of the Hong Kong Special Administrative Region shall have the right to vote and the right to stand for election in accordance with law.</p>
+    </div>
+
+    <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 5px;font:500 12px/1.5 'Noto Sans SC',sans-serif;letter-spacing:.06em;color:var(--ink4)">為何並排</p>
+      <p style="margin:0;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">第 26 条把选举权和被选举权只给「永久性居民」，而这个词的全部内容都在第 24 条 —— 第 24 条的六个类别直接决定第 26 条的适用范围。单读任何一条都会答错。</p>
+    </div>
+
+    <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 9px;font:500 12px/1.4 'Noto Sans SC',sans-serif">同章邻近</p>
+      <div style="display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+        <a href="#" style="background:var(--paper);padding:8px 11px;display:flex;gap:10px;align-items:baseline" style-hover="background:var(--sheet2)"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink2);flex:0 0 44px">art 25</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">法律面前一律平等</span></a>
+        <a href="#" style="background:var(--paper);padding:8px 11px;display:flex;gap:10px;align-items:baseline" style-hover="background:var(--sheet2)"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink2);flex:0 0 44px">art 27</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">言论、新闻、出版、结社、集会自由</span></a>
+        <a href="#" style="background:var(--paper);padding:8px 11px;display:flex;gap:10px;align-items:baseline" style-hover="background:var(--sheet2)"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink2);flex:0 0 44px">art 39</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">国际人权公约的继续适用</span></a>
+        <a href="#" style="background:var(--paper);padding:8px 11px;display:flex;gap:10px;align-items:baseline" style-hover="background:var(--sheet2)"><span style="font:500 10.5px/1.5 'Geist Mono',monospace;color:var(--ink2);flex:0 0 44px">art 42</span><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">居民的义务（本章末条）</span></a>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 9px;font:500 12px/1.4 'Noto Sans SC',sans-serif">本条的笔记 <span style="font:400 10.5px 'Geist Mono',monospace;color:var(--ink4);margin-left:3px">2</span></p>
+      <p style="margin:0 0 7px;padding:10px 12px;background:var(--paper);border:1px solid var(--rule);border-radius:2px;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink2)">「连续七年」只写在第 (2) 和第 (4) 项里 —— 第 (1) 项是在港出生的中国公民，不需要七年。</p>
+      <p style="margin:0;padding:10px 12px;background:var(--paper);border:1px solid var(--rule);border-radius:2px;font:400 12px/1.85 'Noto Sans SC',sans-serif;color:var(--ink2)">第 (3) 项有 1999 年释法，考试和实务里都是重点。</p>
+    </div>
+    </div>
+
+    <div data-open="{{ openQuiz }}">
+    <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--rule3)">
+      <h2 style="margin:0;font:600 13.5px/1.3 'Noto Serif SC',serif;letter-spacing:.12em">掌握度</h2>
+      </div>
+
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:11px">
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3);flex:0 0 24px">III</span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">居民的基本权利和义务</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">6/8</span></div>
+        <div style="height:5px;background:var(--sunk)"><div style="height:5px;width:75%;background:var(--ink)"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3);flex:0 0 24px">V</span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">经济</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">4/7</span></div>
+        <div style="height:5px;background:var(--sunk)"><div style="height:5px;width:57%;background:var(--ink)"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3);flex:0 0 24px">IV</span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">政治体制</span><span style="margin-left:auto;white-space:nowrap;font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2)">2/9</span></div>
+        <div style="height:5px;background:var(--sunk)"><div style="height:5px;width:22%;background:var(--seal)"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink3);flex:0 0 24px">II</span><span style="font:400 12px/1.5 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">中央与特区的关系</span><span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">未作答</span></div>
+        <div style="height:5px;background:var(--sunk)"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 9px;font:500 12px/1.4 'Noto Sans SC',sans-serif">错题本 <span style="font:400 10.5px 'Geist Mono',monospace;color:var(--seal);margin-left:3px">1</span></p>
+      <div style="border:1px solid var(--sealrule);background:var(--sealbg);border-radius:2px;padding:11px 13px">
+        <p style="margin:0 0 5px;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ink4)">qb-030 · 第 3 题</p>
+        <p style="margin:0 0 7px;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink)">行政长官必须听行政会议的意见吗？</p>
+        <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--seal)">你答 art 47，正解 art 54 —— 这题连离线检索也常错（融合检索把它排在 47/45/53 之后）。</p>
+      </div>
+      <p style="margin:9px 0 0;font:400 10.5px/1.8 'Noto Sans SC',sans-serif;color:var(--ink4)">错题会在 3 天后重新插入题序，不是简单地排到末尾。</p>
+    </div>
+    </div>
+
+    <div data-open="{{ openNotes }}">
+    <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--rule3)">
+      <h2 style="margin:0;font:600 13.5px/1.3 'Noto Serif SC',serif;letter-spacing:.12em">標籤與導出</h2>
+      </div>
+
+    <div style="margin-top:16px">
+      <div style="display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+        <div style="background:var(--paper);padding:8px 11px;display:flex;align-items:baseline;gap:9px"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">居民身份</span><span style="flex:1;height:4px;background:var(--sunk);min-width:0"><span style="display:block;height:4px;width:100%;background:var(--ink2)"></span></span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink3)">4</span></div>
+        <div style="background:var(--paper);padding:8px 11px;display:flex;align-items:baseline;gap:9px"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">经济</span><span style="flex:1;height:4px;background:var(--sunk);min-width:0"><span style="display:block;height:4px;width:75%;background:var(--ink2)"></span></span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink3)">3</span></div>
+        <div style="background:var(--paper);padding:8px 11px;display:flex;align-items:baseline;gap:9px"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">释法</span><span style="flex:1;height:4px;background:var(--sunk);min-width:0"><span style="display:block;height:4px;width:50%;background:var(--ink2)"></span></span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink3)">2</span></div>
+        <div style="background:var(--paper);padding:8px 11px;display:flex;align-items:baseline;gap:9px"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--ink2);min-width:0">七年</span><span style="flex:1;height:4px;background:var(--sunk);min-width:0"><span style="display:block;height:4px;width:50%;background:var(--ink2)"></span></span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--ink3)">2</span></div>
+        <div style="background:var(--paper);padding:8px 11px;display:flex;align-items:baseline;gap:9px"><span style="font:400 12px/1.6 'Noto Sans SC',sans-serif;color:var(--seal);min-width:0">待核对</span><span style="flex:1;height:4px;background:var(--sunk);min-width:0"><span style="display:block;height:4px;width:25%;background:var(--seal)"></span></span><span style="font:400 10.5px/1.6 'Geist Mono',monospace;color:var(--seal)">1</span></div>
+      </div>
+      <button type="button" style="margin-top:9px;border:1px solid var(--rule);background:transparent;color:var(--ink3);border-radius:2px;padding:5px 10px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="color:var(--ink)">＋ 新标签</button>
+    </div>
+
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 9px;font:500 12px/1.4 'Noto Sans SC',sans-serif">导出</p>
+      <div style="border:1px solid var(--rule);background:var(--paper);border-radius:2px;padding:12px 13px">
+        <p style="margin:0 0 9px;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2)">每条笔记带上它的条文编号、标签、来源会话与当时的工具调用 id —— 导出的文件本身就是可复核的。</p>
+        <pre style="margin:0;padding:9px;background:var(--sunk);border-radius:2px;font:400 10.5px/1.7 'Geist Mono',monospace;color:var(--ink2);white-space:pre-wrap">## art. 114 — Basic Law, art. 114
+自由港 = 不征关税；但 unless otherwise…
+tags: 经济, 关税
+from: conv/cmu13igra · msg/4 · tool/get_article</pre>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+        <button type="button" style="border:1px solid var(--rule3);background:var(--ink);color:var(--paper);border-radius:2px;padding:6px 11px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="opacity:.86">下载 .md</button>
+        <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 11px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">下载 .json</button>
+        <button type="button" style="border:1px solid var(--rule2);background:transparent;color:var(--ink2);border-radius:2px;padding:6px 11px;font:400 10.5px/1.5 'Noto Sans SC',sans-serif;cursor:pointer" style-hover="background:var(--sheet2)">复制到剪贴板</button>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:14px;border-top:1px solid var(--rule);display:flex;gap:20px">
+      <div><p style="margin:0;font:400 22px/1.2 'Noto Serif SC',serif">12</p><p style="margin:2px 0 0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">条笔记</p></div>
+      <div><p style="margin:0;font:400 22px/1.2 'Noto Serif SC',serif">9</p><p style="margin:2px 0 0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">个条文</p></div>
+      <div><p style="margin:0;font:400 22px/1.2 'Noto Serif SC',serif">24</p><p style="margin:2px 0 0;font:400 10.5px/1.6 'Noto Sans SC',sans-serif;color:var(--ink3)">最常记的条</p></div>
+    </div>
+    </div>
+
+    <div data-open="{{ openEval }}">
+    <div style="display:flex;align-items:baseline;gap:9px;padding-bottom:9px;border-bottom:1px solid var(--rule3)">
+      <h2 style="margin:0;font:600 13.5px/1.3 'Noto Serif SC',serif;letter-spacing:.12em">部署實況</h2>
+      </div>
+
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:1px;background:var(--rule)">
+      <div style="background:var(--paper);padding:11px 13px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:500 12px/1.5 'Noto Sans SC',sans-serif">语料</span><span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ok)">real</span></div>
+        <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2)">160 条 · 3 附件 · 80 学习题，与本地 seed 经 SHA-256 逐字段校验一致。</p>
+      </div>
+      <div style="background:var(--paper);padding:11px 13px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:500 12px/1.5 'Noto Sans SC',sans-serif">检索</span><span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--seal)">partial</span></div>
+        <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2)">题库 + 全文两路在跑，语义路关闭 —— 线上是 80.0% 那条流水线。</p>
+      </div>
+      <div style="background:var(--paper);padding:11px 13px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:500 12px/1.5 'Noto Sans SC',sans-serif">模型</span><span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--seal)">mock</span></div>
+        <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2)">脚本替身走完整工具循环。脚本没覆盖的问题，它会真检索、然后直说自己不作答。</p>
+      </div>
+      <div style="background:var(--paper);padding:11px 13px">
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px"><span style="font:500 12px/1.5 'Noto Sans SC',sans-serif">其余全部为真</span><span style="margin-left:auto;white-space:nowrap;font:400 10.5px/1.5 'Geist Mono',monospace;color:var(--ok)">real</span></div>
+        <p style="margin:0;font:400 12px/1.8 'Noto Sans SC',sans-serif;color:var(--ink2)">MCP 服务端、引用审计、条文面板、0–5 评分及其聚合。</p>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;padding-top:14px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 9px;font:500 12px/1.4 'Noto Sans SC',sans-serif">自己复现</p>
+      <pre style="margin:0;padding:11px 12px;background:var(--sunk);border-radius:2px;font:400 10.5px/1.85 'Geist Mono',monospace;color:var(--ink2);white-space:pre-wrap">npm run db:seed
+npm run embed          # 本地算向量，无需 key
+npm run eval:retrieval # 复现上面这张表</pre>
+      <p style="margin:9px 0 0;font:400 10.5px/1.8 'Noto Sans SC',sans-serif;color:var(--ink4)">完整表格（含 any@k、dev/test/all 三档）在 <span style="font-family:'Geist Mono',monospace">eval/RESULTS.md</span>；这一页只放能得出结论的那部分。</p>
+    </div>
+
+    <div style="margin-top:22px;padding-top:14px;border-top:1px solid var(--rule)">
+      <p style="margin:0 0 9px;font:500 12px/1.4 'Noto Sans SC',sans-serif">这套东西借了谁的主意</p>
+      <p style="margin:0;font:400 12px/1.9 'Noto Sans SC',sans-serif;color:var(--ink2);text-wrap:pretty">港大法律与科技中心的 AI CLIC Recommender 有三个设计值得照抄：先让你确认它推断出的主题；把结果呈现为「一道你认得的问题」而不是一份文件；每条结果下面都问「这条推荐相关吗（0–5）」。本项目与其无任何隶属关系，只是没必要重新发明这三件事。</p>
+    </div>
+    </div>
+  </aside>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;\&quot;light\&quot; | \&quot;dark\&quot;&quot;,&quot;section&quot;:&quot;外观&quot;},&quot;showTrace&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;证据栏&quot;},&quot;flagUnverified&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;证据栏&quot;},&quot;rawJson&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;证据栏&quot;}}">
+class Component extends DCLogic {
+  state = {
+    theme: null, mode: "ask", asked: true, stage: 5,
+    hover: null, open: { 114: true, 108: false, 110: false, 106: false },
+    rating: 4, ratingState: "已保存", json: null, input: "",
+    convQuery: "", disc: false, quizPick: 26, left: null, right: null,
+  };
+
+  hdrRef = React.createRef();
+
+  /** The sticky header re-wraps by width and grows when the notice opens, so its height is measured, not assumed. */
+  componentDidMount() {
+    const el = this.hdrRef.current;
+    if (!el) return;
+    const write = () => document.documentElement.style.setProperty("--hdr", `${Math.round(el.getBoundingClientRect().height)}px`);
+    write();
+    this._ro = new ResizeObserver(write);
+    this._ro.observe(el);
+  }
+
+  componentWillUnmount() {
+    if (this._t) this._t.forEach(clearTimeout);
+    if (this._ro) this._ro.disconnect();
+  }
+
+  theme() { return this.state.theme ?? this.props.theme ?? "light"; }
+
+  /** Switching mode clears any manual rail override so each mode reopens the rail it needs. */
+  go(mode) { this.setState({ mode, left: null, right: null }); }
+
+  replay = () => {
+    if (this._t) this._t.forEach(clearTimeout);
+    this.setState({ asked: true, stage: 0 });
+    this._t = [1, 2, 3, 4, 5].map((s) => setTimeout(() => this.setState({ stage: s }), s * 520));
+  };
+
+  renderVals() {
+    const s = this.state, th = this.theme(), st = s.stage;
+    const open = s.open, hov = s.hover;
+    const car = (n) => (open[n] ? "−" : "+");
+    const lane = (n) => (st >= n ? "on" : "off");
+    const labels = ["收到提问，准备检索…", "比对 80 道学习题…", "全文检索：strict 无结果，转 loose…", "倒数排名融合三路结果…", "读取命中条文全文…", ""];
+    const qz = (n) => (s.quizPick !== n ? "" : n === 26 ? "ok" : "bad");
+    const jsonOn = s.json === null ? !!this.props.rawJson : s.json;
+    // Every mode has a side panel; only the reading modes prefer the corpus tree over it.
+    const leftDefault = s.left ?? (s.mode === "read" || s.mode === "notes");
+    const rightDefault = s.right ?? !(s.mode === "read" || s.mode === "notes");
+    return {
+      theme: th,
+      hdrRef: this.hdrRef,
+      themeLabel: th === "dark" ? "☾ 暗" : "☀ 亮",
+      toggleTheme: () => this.setState({ theme: th === "dark" ? "light" : "dark" }),
+      discOpen: s.disc ? 1 : 0,
+      toggleDisc: () => this.setState({ disc: !s.disc }),
+
+      tabAsk: s.mode === "ask" ? 1 : 0, tabRead: s.mode === "read" ? 1 : 0,
+      tabQuiz: s.mode === "quiz" ? 1 : 0, tabNotes: s.mode === "notes" ? 1 : 0,
+      tabEval: s.mode === "eval" ? 1 : 0,
+      goAsk: () => this.go("ask"), goRead: () => this.go("read"),
+      goQuiz: () => this.go("quiz"), goNotes: () => this.go("notes"),
+      goEval: () => this.go("eval"),
+      openChapter: (e) => { e.preventDefault(); this.go("read"); },
+
+      openAsk: s.mode === "ask" ? 1 : 0, openRead: s.mode === "read" ? 1 : 0,
+      openQuiz: s.mode === "quiz" ? 1 : 0, openNotes: s.mode === "notes" ? 1 : 0,
+      openEval: s.mode === "eval" ? 1 : 0,
+      // One rail at a time: reading modes keep the corpus tree, answer modes keep the evidence.
+      leftOpen: leftDefault ? 1 : 0,
+      rightOpen: rightDefault ? 1 : 0,
+      sidePanelLabel: { ask: "證據", read: "對照", quiz: "掌握度", notes: "標籤", eval: "部署" }[s.mode],
+      // Mutually exclusive: three columns never fit, so opening one rail closes the other.
+      toggleLeft: () => this.setState(leftDefault ? { left: false } : { left: true, right: false }),
+      toggleRight: () => this.setState(rightDefault ? { right: false } : { right: true, left: false }),
+
+      q24: qz(24), q25: qz(25), q26: qz(26), q27: qz(27),
+      pick24: () => this.setState({ quizPick: 24 }), pick25: () => this.setState({ quizPick: 25 }),
+      pick26: () => this.setState({ quizPick: 26 }), pick27: () => this.setState({ quizPick: 27 }),
+      quizOpen: s.quizPick == null ? 0 : 1,
+      quizHint: s.quizPick == null ? 1 : 0,
+      verdictTone: s.quizPick === 26 ? "ok" : "bad",
+      quizVerdict: s.quizPick === 26
+        ? "✓ 对了 —— 正解是第 26 条，它是题库为 qb-005 标注的答案。"
+        : `✗ 你选了第 ${s.quizPick} 条；正解是第 26 条。`,
+
+      openEmpty: s.asked ? 0 : 1, openAnswer: s.asked ? 1 : 0,
+      working: s.asked && st < 5 ? 1 : 0,
+      answered: s.asked && st >= 5 ? 1 : 0,
+      stageLabel: labels[Math.min(st, 5)],
+      stagePct: `${Math.min(st, 5) * 20}%`,
+      lane1: lane(2), lane2: lane(3), lane3: lane(3), lane4: lane(4),
+      replay: this.replay,
+      ask: () => this.replay(),
+      reset: () => { if (this._t) this._t.forEach(clearTimeout); this.setState({ asked: false, stage: 0 }); },
+
+      input: s.input, setInput: (e) => this.setState({ input: e.target.value }),
+      convQuery: s.convQuery, setConvQuery: (e) => this.setState({ convQuery: e.target.value }),
+
+      s1hot: hov === 114 ? 1 : 0, s2hot: hov === 114 ? 1 : 0, s3hot: hov === 114 ? 1 : 0,
+      s4hot: hov === 106 ? 1 : 0,
+      c114hot: hov === 114 ? 1 : 0, c106hot: hov === 106 ? 1 : 0,
+      hover114: () => this.setState({ hover: 114 }),
+      hover106: () => this.setState({ hover: 106 }),
+      hoverOff: () => this.setState({ hover: null }),
+
+      c114open: open[114] ? 1 : 0, c108open: open[108] ? 1 : 0,
+      c110open: open[110] ? 1 : 0, c106open: open[106] ? 1 : 0,
+      c114caret: car(114), c108caret: car(108), c110caret: car(110), c106caret: car(106),
+      toggle114: () => this.setState({ open: { ...open, 114: !open[114] } }),
+      toggle108: () => this.setState({ open: { ...open, 108: !open[108] } }),
+      toggle110: () => this.setState({ open: { ...open, 110: !open[110] } }),
+      toggle106: () => this.setState({ open: { ...open, 106: !open[106] } }),
+
+      r0: s.rating === 0 ? 1 : 0, r1: s.rating === 1 ? 1 : 0, r2: s.rating === 2 ? 1 : 0,
+      r3: s.rating === 3 ? 1 : 0, r4: s.rating === 4 ? 1 : 0, r5: s.rating === 5 ? 1 : 0,
+      rate0: () => this.rate(0), rate1: () => this.rate(1), rate2: () => this.rate(2),
+      rate3: () => this.rate(3), rate4: () => this.rate(4), rate5: () => this.rate(5),
+      rateState: s.ratingState,
+
+      traceOpen: (this.props.showTrace ?? true) ? 1 : 0,
+      flagOpen: (this.props.flagUnverified ?? true) ? 1 : 0,
+      jsonOpen: jsonOn ? 1 : 0,
+      jsonLabel: jsonOn ? "收起原始 JSON" : "看原始 JSON",
+      toggleJson: () => this.setState({ json: !jsonOn }),
+    };
+  }
+
+  rate(v) {
+    this.setState({ rating: v, ratingState: "保存中…" });
+    setTimeout(() => this.setState({ ratingState: "已保存" }), 380);
+  }
+}
+
+</script>
+</body>
+</html>
