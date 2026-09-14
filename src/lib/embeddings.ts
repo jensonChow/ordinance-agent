@@ -102,3 +102,20 @@ export function cosine(a: number[], b: number[]): number {
   for (let i = 0; i < a.length && i < b.length; i++) sum += a[i] * b[i];
   return sum;
 }
+
+/**
+ * Why the dense path is not running, when it is not. Empty string when it is, or when it was never asked for.
+ *
+ * Carried out to the caller and into the search tool's own output because the alternative is guessing: a model
+ * that fails to load inside a serverless function fails there and nowhere else, and "unavailable" on its own does
+ * not say whether the file is missing, the native binding would not load, or someone switched it off.
+ */
+export function denseUnavailableReason(): string {
+  if (disabled()) return "DENSE_RETRIEVAL=off";
+  return loadError ?? "";
+}
+
+/** Where the loader is looking, for the same diagnostic purpose — `process.cwd()` is not the same everywhere. */
+export function modelLocation() {
+  return { dir: MODEL_DIR, bundled: modelIsBundled(), dtype: EMBEDDING_DTYPE, localOnly: process.env.EMBEDDING_LOCAL_ONLY === "1" };
+}

@@ -39,6 +39,8 @@ export type ShellData = {
      * serverless function, and each search reports its own live paths (`paths_run`, and the `vec` label on a hit).
      */
     enabled: boolean;
+    /** What the retrieval function last reported about itself — an observation, not a setting. Null before any search. */
+    observed: { ran: boolean; detail: string } | null;
     withVectors: string;
     withoutVectors: string;
     index: string | null;
@@ -1246,10 +1248,19 @@ function EvalMode({ dense, counts }: { dense: ShellData["dense"]; counts: ShellD
       >
         打開評測頁 →
       </a>
-      {dense.enabled ? null : (
+      {dense.enabled && dense.observed?.ran !== false ? null : (
         <p style={{ ...sans(11.5, 400, 1.7), color: "var(--seal)", background: "var(--sealbg)", border: "1px solid var(--sealrule)", padding: "9px 11px", marginTop: 14 }}>
-          這個部署關閉了向量檢索（<code style={mono(10)}>DENSE_RETRIEVAL=off</code>），跑的是「題庫 + 全文檢索」那條管線，
-          test 集 primary@5 為 <strong>{dense.withoutVectors}</strong>，不是表裡的 {dense.withVectors}。
+          {dense.enabled ? (
+            <>
+              設定是開的，但<strong>檢索行程最近一次實跑沒能載入向量模型</strong>（<span lang="en">{dense.observed?.detail}</span>）。
+            </>
+          ) : (
+            <>
+              這個部署關閉了向量檢索（<code style={mono(10)}>DENSE_RETRIEVAL=off</code>）。
+            </>
+          )}{" "}
+          所以跑的是「題庫 + 全文檢索」那條管線，test 集 primary@5 為 <strong>{dense.withoutVectors}</strong>，不是表裡的{" "}
+          {dense.withVectors}。
         </p>
       )}
       <Rule />
@@ -1270,15 +1281,18 @@ function DeployRail({ dense }: { dense: ShellData["dense"] }) {
       <p>MCP 服務端在 <code style={mono(10)}>/api/mcp</code>，七個工具，任何 MCP 客戶端可直接連。</p>
       <Rule />
       <p>
-        {dense.enabled ? (
+        {dense.enabled && dense.observed?.ran === false ? (
+          <>向量檢索：設定開著，但檢索行程實跑時載入不了模型 —— <span lang="en">{dense.observed.detail}</span></>
+        ) : dense.enabled ? (
           <>
-            向量檢索：已啟用 —— 模型隨部署打包（<code style={mono(10)}>models/</code>），請求路徑上不向 huggingface.co 取任何檔案
+            向量檢索：{dense.observed?.ran ? "實跑確認開啟" : "已啟用（尚無實跑記錄）"} —— 模型隨部署打包（
+            <code style={mono(10)}>models/</code>），請求路徑上不向 huggingface.co 取任何檔案
             {dense.index ? (
               <>
                 。索引 <span lang="en">{dense.index}</span>
               </>
             ) : null}
-            。這一行只說配置；某一次檢索到底有沒有跑向量，看那次結果上的 <code style={mono(10)}>vec</code> 標籤 —— 檢索工具每次都會回報哪幾條路是活的。
+            。每一次檢索到底有沒有跑向量，看那次結果上的 <code style={mono(10)}>vec</code> 標籤 —— 檢索工具每次都會回報哪幾條路是活的，並把結果記下來給這一行用。
           </>
         ) : (
           "向量檢索：關閉"

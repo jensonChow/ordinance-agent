@@ -1,6 +1,7 @@
 import { ResourceTemplate } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
+import { recordDenseObservation } from "@/lib/index-meta";
 import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesHybridReported, searchQuestions, suggestTopics } from "@/lib/law";
 
 export const runtime = "nodejs";
@@ -50,15 +51,15 @@ const handler = createMcpHandler(
       },
       async ({ query, limit, chapters }) => {
         const { hits, paths } = await searchArticlesHybridReported(query, limit, chapters);
+        // Only this process can know whether the model came up; the pages render in a different one.
+        recordDenseObservation(paths.dense, paths.denseReason);
         return text({
           query,
           chapters: chapters ?? null,
           // Named so a client can tell "the dense path lost" from "the dense path was not running" — the model is
           // optional, and a retrieval tool that hides which of its paths were live is not auditable.
-          paths_run: Object.entries(paths)
-            .filter(([, on]) => on)
-            .map(([name]) => name),
-          dense_path: paths.dense ? "ran" : "unavailable — results are lexical only",
+          paths_run: (["questionBank", "fullText", "dense"] as const).filter((name) => paths[name]),
+          dense_path: paths.dense ? "ran" : `not running (${paths.denseReason || "reason unknown"}) — results are lexical only`,
           hits: hits.map((h) => ({
             article: h.number,
             citation: formatCitation(h.number),

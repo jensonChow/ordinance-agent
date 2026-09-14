@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { embedOne, EMBEDDING_DIMS } from "@/lib/embeddings";
+import { denseUnavailableReason, embedOne, EMBEDDING_DIMS } from "@/lib/embeddings";
 import { stripDomainStopwords } from "@/lib/text";
 export { formatCitation, stripDomainStopwords } from "@/lib/text";
 import { Prisma } from "@/generated/prisma/client";
@@ -159,7 +159,7 @@ function fuse(lists: { source: RetrievalSource; articles: number[] }[], limit: n
 }
 
 /** Which retrieval paths were actually available for one search — see searchArticlesHybridReported. */
-export type RetrievalPaths = { questionBank: boolean; fullText: boolean; dense: boolean };
+export type RetrievalPaths = { questionBank: boolean; fullText: boolean; dense: boolean; denseReason: string };
 
 /**
  * The retrieval the agent actually uses: the question bank (lexical and dense), full-text search and dense
@@ -239,7 +239,7 @@ export async function searchArticlesHybridReported(
     const via = viaQuestions.get(n);
     return [{ ...hit, mode: "hybrid" as const, sources: sourcesByArticle.get(n) ?? [], ...(via?.length ? { viaQuestions: via } : {}) }];
   });
-  return { hits, paths: { questionBank: true, fullText: true, dense: vector !== null } };
+  return { hits, paths: { questionBank: true, fullText: true, dense: vector !== null, denseReason: vector ? "" : denseUnavailableReason() } };
 }
 
 /** Hits only, for callers that do not report on the retrieval itself (the evaluation, the tests). */

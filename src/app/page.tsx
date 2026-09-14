@@ -118,6 +118,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
       quiz={quiz.map((q) => ({ ...q, options: q.options.map((n) => ({ n, preview: preview.get(n) ?? "" })) }))}
       dense={{
         enabled: process.env.DENSE_RETRIEVAL !== "off",
+        observed: index.observed ? { ran: index.observed.ran, detail: index.observed.value } : null,
         withVectors: pct(FUSED),
         withoutVectors: pct(LEXICAL),
         index: index.state === "ok" ? index.built : null,

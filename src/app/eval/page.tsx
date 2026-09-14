@@ -74,7 +74,10 @@ export default async function EvalPage() {
   // retrieval process directly (it is a different function), so it reports the configuration and the index stamp, and
   // each search reports its own live paths where the reader can see them.
   const index = await indexStatus();
-  const denseOff = process.env.DENSE_RETRIEVAL === "off";
+  // "Configured on" is not "running": the retrieval route is a different serverless function, and it writes down
+  // what it actually saw. If it last reported the vector path down, this page says so — the setting does not get
+  // the last word over the observation.
+  const denseOff = process.env.DENSE_RETRIEVAL === "off" || index.observed?.ran === false;
 
   const [ratingCount, ratingAvg, byValue, topRated] = await Promise.all([
     prisma.rating.count(),
@@ -122,17 +125,29 @@ export default async function EvalPage() {
             margin: "16px 0",
           }}
         >
-          <strong>這個部署沒有跑向量檢索。</strong> 這裡設了 <code style={mono}>DENSE_RETRIEVAL=off</code>，檢索退回「題庫 + 全文檢索」——也就是下表的{" "}
+          <strong>這個部署沒有跑向量檢索。</strong>{" "}
+          {process.env.DENSE_RETRIEVAL === "off" ? (
+            <>
+              這裡設了 <code style={mono}>DENSE_RETRIEVAL=off</code>。
+            </>
+          ) : (
+            <>
+              設定是開的，但檢索行程最近一次實跑回報它沒能載入模型（<span lang="en">{index.observed?.value}</span>
+              {index.observed ? `，${index.observed.at.toISOString().slice(0, 16).replace("T", " ")} UTC` : ""}）。
+            </>
+          )}{" "}
+          檢索退回「題庫 + 全文檢索」——也就是下表的{" "}
           <em>question bank → smart FTS</em> 那一行，test 集 primary@5 為 <strong>{pct(score(LEXICAL, "test"))}</strong>，不是{" "}
           {pct(score(FUSED, "test"))}。表中數字是開著向量路測的；把倉庫克隆下來跑{" "}
           <code style={mono}>npm run embed &amp;&amp; npm run eval:retrieval</code> 即可復現，不需要任何 key。
         </p>
       ) : null}
 
-      {index.state === "ok" ? (
+      {index.state === "ok" && index.observed?.ran !== false ? (
         <p style={{ ...mono, color: "var(--ink4)", margin: "12px 0 0" }}>
           向量索引 <span lang="en">{index.built}</span>
-          {index.builtAt ? ` · 建於 ${index.builtAt.toISOString().slice(0, 10)}` : ""} —— 與本進程載入的模型相符
+          {index.builtAt ? ` · 建於 ${index.builtAt.toISOString().slice(0, 10)}` : ""}
+          {index.observed?.ran ? " —— 檢索行程最近一次實跑確認用的就是它" : " —— 與本進程載入的模型相符"}
         </p>
       ) : index.state === "off" ? null : (
         <p
