@@ -14,6 +14,7 @@ export const maxDuration = 60;
 const SYSTEM = `You are a study assistant for the Basic Law of the Hong Kong Special Administrative Region.
 Rules:
 - Before answering any question about the Basic Law, look the text up with the tools — never answer from memory. For questions in everyday language, call find_questions first (it maps lay questions to articles), then search_articles if needed, then get_article to read the full text before quoting.
+- When a question is broad, or its wording could belong to more than one chapter, call suggest_topics first and name the top chapters to the reader before you answer, so they can redirect you. Do not use it for a question that plainly names its subject.
 - Quote the relevant wording and cite it as "Article N" (or "Article N(paragraph)"). Mention footnotes when an article carries an NPCSC interpretation note.
 - If a question is outside the Basic Law, say so and do not speculate. You are a study aid, not a lawyer; this is not legal advice.
 - When the user asks you to remember something, use save_note. Keep answers concise and structured.`;
@@ -23,7 +24,12 @@ function mcpUrl(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const { messages, conversationId } = (await req.json()) as { messages: UIMessage[]; conversationId?: string };
+  const { messages, conversationId, chapters } = (await req.json()) as {
+    messages: UIMessage[];
+    conversationId?: string;
+    /** Chapters the reader ticked in the UI; retrieval is restricted to them for this turn. */
+    chapters?: string[];
+  };
   const { model, info } = await getModel();
 
   // Tools come from two places: the Basic Law MCP server (remote, discovered at runtime) …
@@ -87,9 +93,17 @@ export async function POST(req: Request) {
     });
   }
 
+  // A topic the reader chose is an instruction, not a hint: say so in the prompt and pass it to the tool, so a
+  // narrowed search that finds nothing is reported as such instead of quietly widening again.
+  const narrowed = chapters?.length
+    ? `\n- The reader has narrowed this question to Chapter${chapters.length > 1 ? "s" : ""} ${chapters.join(", ")}. Pass chapters: ${JSON.stringify(
+        chapters,
+      )} to search_articles. If nothing in those chapters answers the question, say that plainly and suggest which chapter to try instead — do not search outside them without saying so.`
+    : "";
+
   const result = streamText({
     model,
-    system: SYSTEM,
+    system: SYSTEM + narrowed,
     messages: await convertToModelMessages(messages),
     tools: { ...mcpTools, ...localTools },
     stopWhen: isStepCount(8),

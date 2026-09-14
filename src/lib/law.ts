@@ -17,6 +17,12 @@ export type ArticleHit = {
   mode: "strict" | "loose" | "dense" | "hybrid";
   /** For hybrid hits: which retrieval paths returned this article, in a fixed order. */
   sources?: RetrievalSource[];
+  /**
+   * For hybrid hits: the study-bank questions that map to this article. The AI CLIC Recommender presents its
+   * results *as* these "model questions" rather than as raw documents; surfacing them here lets a reader see the
+   * lay question the retrieval actually matched, not just the article it landed on.
+   */
+  viaQuestions?: { id: string; text: string }[];
 };
 
 /** The retrieval paths the hybrid search fuses; surfaced per hit so an answer's citations stay auditable. */
@@ -25,10 +31,19 @@ export type RetrievalSource = "question bank" | "full-text" | "semantic";
 const HEADLINE = "MaxFragments=2, MinWords=10, MaxWords=28, StartSel=**, StopSel=**";
 
 /**
+ * Restrict a search to the chapters a reader has ticked. Empty or undefined means no restriction, so every
+ * caller can pass the selection straight through without branching.
+ */
+function chapterFilter(chapters?: string[]) {
+  return chapters?.length ? Prisma.sql`AND a."chapterNumber" = ANY(${chapters}::text[])` : Prisma.empty;
+}
+
+/**
  * Strict full-text search: PostgreSQL websearch syntax (all terms must match; quotes, OR and -exclusions allowed).
  * Backed by the GIN index from migration article_fts_index.
  */
-export async function searchArticles(query: string, limit = 5): Promise<ArticleHit[]> {
+export async function searchArticles(query: string, limit = 5, chapters?: string[]): Promise<ArticleHit[]> {
+  const only = chapterFilter(chapters);
   const rows = await prisma.$queryRaw<Omit<ArticleHit, "mode">[]>(Prisma.sql`
     SELECT a."number",
            a."chapterNumber",
@@ -38,7 +53,7 @@ export async function searchArticles(query: string, limit = 5): Promise<ArticleH
     FROM "Article" a
     JOIN "Chapter" c ON c."number" = a."chapterNumber",
          websearch_to_tsquery('english', ${query}) q
-    WHERE to_tsvector('english', a."text") @@ q
+    WHERE to_tsvector('english', a."text") @@ q ${only}
     ORDER BY "rank" DESC, a."number" ASC
     LIMIT ${limit}
   `);
@@ -50,8 +65,9 @@ export async function searchArticles(query: string, limit = 5): Promise<ArticleH
  * article still ranks. Built by rewriting plainto_tsquery's AND-chain into an OR-chain inside PostgreSQL, over
  * Article.searchText (boilerplate phrases removed; index from migration article_search_text).
  */
-export async function searchArticlesLoose(query: string, limit = 5): Promise<ArticleHit[]> {
+export async function searchArticlesLoose(query: string, limit = 5, chapters?: string[]): Promise<ArticleHit[]> {
   const loose = stripDomainStopwords(query);
+  const only = chapterFilter(chapters);
   const rows = await prisma.$queryRaw<Omit<ArticleHit, "mode">[]>(Prisma.sql`
     SELECT a."number",
            a."chapterNumber",
@@ -61,7 +77,7 @@ export async function searchArticlesLoose(query: string, limit = 5): Promise<Art
     FROM "Article" a
     JOIN "Chapter" c ON c."number" = a."chapterNumber",
          to_tsquery('english', regexp_replace(plainto_tsquery('english', ${loose})::text, '&', '|', 'g')) q
-    WHERE to_tsvector('english', a."searchText") @@ q
+    WHERE to_tsvector('english', a."searchText") @@ q ${only}
     ORDER BY "rank" DESC, a."number" ASC
     LIMIT ${limit}
   `);
@@ -69,11 +85,11 @@ export async function searchArticlesLoose(query: string, limit = 5): Promise<Art
 }
 
 /** Strict hits first, then loose hits to fill up to `limit` (deduplicated). This is what the MCP tool exposes. */
-export async function searchArticlesSmart(query: string, limit = 5): Promise<ArticleHit[]> {
-  const strict = await searchArticles(query, limit);
+export async function searchArticlesSmart(query: string, limit = 5, chapters?: string[]): Promise<ArticleHit[]> {
+  const strict = await searchArticles(query, limit, chapters);
   if (strict.length >= limit) return strict;
   const seen = new Set(strict.map((h) => h.number));
-  const loose = (await searchArticlesLoose(query, limit + strict.length)).filter((h) => !seen.has(h.number));
+  const loose = (await searchArticlesLoose(query, limit + strict.length, chapters)).filter((h) => !seen.has(h.number));
   return [...strict, ...loose].slice(0, limit);
 }
 
@@ -84,9 +100,15 @@ export async function searchArticlesSmart(query: string, limit = 5): Promise<Art
  * Returns [] when the corpus has not been embedded (`npm run embed`) or the model is unavailable, so every
  * caller degrades to lexical retrieval instead of erroring.
  */
-export async function searchArticlesDense(query: string, limit = 5, precomputed?: number[] | null): Promise<ArticleHit[]> {
+export async function searchArticlesDense(
+  query: string,
+  limit = 5,
+  precomputed?: number[] | null,
+  chapters?: string[],
+): Promise<ArticleHit[]> {
   const vector = precomputed !== undefined ? precomputed : await embedOne(query);
   if (!vector) return [];
+  const only = chapterFilter(chapters);
   const literal = `{${vector.join(",")}}`;
   const rows = await prisma.$queryRaw<Omit<ArticleHit, "mode">[]>(Prisma.sql`
     SELECT a."number",
@@ -96,7 +118,7 @@ export async function searchArticlesDense(query: string, limit = 5, precomputed?
            left(a."text", 240) AS "snippet"
     FROM "Article" a
     JOIN "Chapter" c ON c."number" = a."chapterNumber"
-    WHERE cardinality(a."embedding") = ${EMBEDDING_DIMS}
+    WHERE cardinality(a."embedding") = ${EMBEDDING_DIMS} ${only}
     ORDER BY "rank" DESC, a."number" ASC
     LIMIT ${limit}
   `);
@@ -141,18 +163,37 @@ function fuse(lists: { source: RetrievalSource; articles: number[] }[], limit: n
  * article search, fused by reciprocal rank. Each component degrades to [] on its own, so the fusion still works
  * when the embedding model is missing — it is then exactly the previous bank + full-text behaviour.
  */
-export async function searchArticlesHybrid(query: string, limit = 5): Promise<ArticleHit[]> {
+export async function searchArticlesHybrid(query: string, limit = 5, chapters?: string[]): Promise<ArticleHit[]> {
   const vector = await embedOne(query); // embed once; both dense lookups reuse it
+  // The question bank is not chapter-scoped, so a reader's topic selection is applied to the articles it maps to
+  // rather than to the SQL; the article-level paths take the same selection as a WHERE clause.
+  const allowed = chapters?.length
+    ? new Set(
+        (await prisma.article.findMany({ where: { chapterNumber: { in: chapters } }, select: { number: true } })).map(
+          (a) => a.number,
+        ),
+      )
+    : null;
+  const keep = (numbers: number[]) => (allowed ? numbers.filter((n) => allowed.has(n)) : numbers);
   const [bankLexical, bankDense, fts, dense] = await Promise.all([
     searchQuestions(query, 3),
     searchQuestionsDense(query, 3, vector),
-    searchArticlesSmart(query, limit),
-    searchArticlesDense(query, limit, vector),
+    searchArticlesSmart(query, limit, chapters),
+    searchArticlesDense(query, limit, vector, chapters),
   ]);
+  // Which lay question sent us to which article — what the reader is shown as the matched "model question".
+  const viaQuestions = new Map<number, { id: string; text: string }[]>();
+  for (const q of [...bankLexical, ...bankDense]) {
+    for (const n of keep(q.articles)) {
+      const list = viaQuestions.get(n) ?? [];
+      if (!list.some((x) => x.id === q.id)) list.push({ id: q.id, text: q.text });
+      viaQuestions.set(n, list);
+    }
+  }
   const ranked = fuse(
     [
-      { source: "question bank", articles: [...new Set(bankLexical.flatMap((h) => h.articles))] },
-      { source: "question bank", articles: [...new Set(bankDense.flatMap((h) => h.articles))] },
+      { source: "question bank", articles: keep([...new Set(bankLexical.flatMap((h) => h.articles))]) },
+      { source: "question bank", articles: keep([...new Set(bankDense.flatMap((h) => h.articles))]) },
       { source: "full-text", articles: fts.map((h) => h.number) },
       { source: "semantic", articles: dense.map((h) => h.number) },
     ],
@@ -182,8 +223,36 @@ export async function searchArticlesHybrid(query: string, limit = 5): Promise<Ar
   }
   return order.flatMap((n) => {
     const hit = known.get(n);
-    return hit ? [{ ...hit, mode: "hybrid" as const, sources: sourcesByArticle.get(n) ?? [] }] : [];
+    if (!hit) return [];
+    const via = viaQuestions.get(n);
+    return [{ ...hit, mode: "hybrid" as const, sources: sourcesByArticle.get(n) ?? [], ...(via?.length ? { viaQuestions: via } : {}) }];
   });
+}
+
+export type TopicSuggestion = { chapter: string; title: string; score: number; articles: number[] };
+
+/**
+ * Rank the chapters a scenario is likely to sit in, so the reader can confirm or correct the topic before the
+ * agent searches. This is the step the AI CLIC Recommender puts between "describe your situation" and its
+ * results, and it is worth keeping: it lets a lay reader steer retrieval without knowing any legal vocabulary.
+ *
+ * The ranking is derived from the retrieval that would run anyway — a wider hybrid search, grouped by chapter and
+ * scored by reciprocal rank — rather than from a separate classifier, so it can never disagree with the search
+ * results the reader is about to see.
+ */
+export async function suggestTopics(query: string, limit = 3): Promise<TopicSuggestion[]> {
+  const hits = await searchArticlesHybrid(query, 12);
+  const byChapter = new Map<string, { title: string; score: number; articles: number[] }>();
+  hits.forEach((h, i) => {
+    const entry = byChapter.get(h.chapterNumber) ?? { title: h.chapterTitle, score: 0, articles: [] };
+    entry.score += 1 / (i + 1);
+    entry.articles.push(h.number);
+    byChapter.set(h.chapterNumber, entry);
+  });
+  return [...byChapter.entries()]
+    .map(([chapter, v]) => ({ chapter, title: v.title, score: Number(v.score.toFixed(4)), articles: v.articles }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
 }
 
 export type QuestionHit = { id: string; text: string; articles: number[]; tags: string[]; rank: number };

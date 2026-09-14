@@ -64,6 +64,23 @@ Python 3.9 venv for the Flask service. Package versions: next 16.3.4, ai 7.0.97,
 | SQL dot product | `select sum(x*y) from unnest(ARRAY[0.1,0.2,0.3], ARRAY[1.0,2.0,3.0]) as t(x,y)` | 1.4, as expected; cosine over L2-normalised vectors needs no extension |
 | Tests / typecheck / lint / smoke | `npm test`, `npx tsc --noEmit`, `npm run lint`, `node scripts/smoke-chat.mjs` | 4 files, 22 tests passed (2 new hybrid integration tests, skipped when the corpus is not embedded); tsc and eslint exit 0; `SMOKE OK` |
 
+## 2026-09-14 (second session) — topic narrowing, model questions, reader ratings
+
+Built after reading the three public systems this stack is aimed at (HKLII, CLIC, the AI CLIC Recommender) rather
+than from the job description alone; see the README section on what was borrowed.
+
+| Step | Command / action | Result |
+|---|---|---|
+| Migration | `npx prisma migrate dev --name relevance_ratings` | `Rating` table created (unique on `(messageId, articleNumber)`, FKs to `Message` with cascade and to `Article`); `npx prisma generate` regenerated the client |
+| Chapter filter in SQL | `tools/call search_articles {"query":"Can the police search my flat without a warrant?","chapters":["III"]}` | all three hits in Chapter III (29, 28, 30); the unfiltered call also returns Chapter IV and V articles. The filter is a `WHERE … chapterNumber = ANY(...)` on every article-level path, and an article-set intersection on the question-bank path |
+| Topic ranking | `tools/call suggest_topics {"query":"Can the police search my flat without a warrant?"}` | `III Fundamental Rights and Duties` 1.8095, `V Economy` 0.6583, `IV Political Structure` 0.5242 — the right chapter first, with the articles that drove it (29, 28, 30, 31) |
+| Model questions over the wire | same `search_articles` call | Article 29 carries `model_questions: ["Can the police search my home without lawful authority?"]`, Article 28 `["Can the police arrest or detain me without a lawful reason?"]` |
+| MCP surface | `tools/list` | 7 tools; `search_articles` advertises the `chapters` enum (I–IX) and `suggest_topics` is listed with its schema |
+| Retrieval unchanged | `npm run eval:retrieval` | identical to the previous run (test primary@5 88.8%, dev 96.3%, all 92.5%); `eval/retrieval-results.json` and `eval/RESULTS.md` unchanged in `git diff`. The chapter filter is optional and off by default, so it cannot move the benchmark |
+| Tests / typecheck / lint / build | `npm test`, `npx tsc --noEmit`, `npm run lint`, `npm run build` | 4 files, **28 tests** passed (6 new: chapter filtering keeps hits inside the chosen chapters and still returns hits when the chapter is right, topic ranking order, model-question provenance, and two citation-parsing cases); tsc, eslint and the production build exit 0 with `/eval`, `/article/[number]` and `/api/ratings` in the route table |
+| Keyless end-to-end | `MODEL_PROVIDER=mock npm run dev -- -p 3100`, `node scripts/smoke-chat.mjs http://127.0.0.1:3100` | `SMOKE OK` over **five** turns. Two are new: a broad question drives `suggest_topics → search_articles → get_article`, and the same question sent with `chapters: ["III"]` arrives at the search tool as `"chapters":["III"]` — the mock model reads the selection back out of the system prompt, so the assertion proves the narrowing survived the whole trip from chip row to tool call |
+| Browser, real clicks | Chrome against `localhost:3100` | Disclaimer banner renders; the nine chapter chips render under the composer; the broad question produces the answer plus a "Narrow to" row built from the `suggest_topics` result; the `Art. 27 qb·vec` chip opens a panel showing the matched study question ("Is freedom of speech protected in Hong Kong?"), the full article, a collapsible matched passage with its caveat, and the 0–5 rating row. Clicking `4` shows "saved"; `/eval` then reports "1 judgement, mean 4.00 out of 5" and "Art. 27 — 1 rating, mean 4.00". `/article/27` renders with its two study questions and prev/next links. No console errors |
+
 ## Not verified
 
 - **Azure OpenAI**: the provider path (`@ai-sdk/azure`, `createAzure({ resourceName, apiKey })`, deployment as model id)

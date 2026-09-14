@@ -47,6 +47,7 @@ model Article {
   chapter       Chapter  @relation(fields: [chapterNumber], references: [number])
   section       Section? @relation(fields: [sectionId], references: [id])
   citations     Citation[]
+  ratings       Rating[]
 
   @@index([chapterNumber])
 }
@@ -83,6 +84,7 @@ model Message {
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   toolCalls      ToolCall[]
   citations      Citation[]
+  ratings        Rating[]
 
   @@index([conversationId, createdAt])
 }
@@ -111,6 +113,25 @@ model Citation {
   article       Article @relation(fields: [articleNumber], references: [number])
 
   @@unique([messageId, articleNumber])
+}
+
+/// A reader's 0-5 relevance judgement on one cited article in one answer.
+/// The AI CLIC Recommender collects exactly this signal under every recommendation ("Is this recommendation
+/// relevant?"); keeping it here gives retrieval a second, human source of truth next to the offline
+/// question-bank benchmark, and it is the only place in the app where a human grades the machine.
+model Rating {
+  id            Int      @id @default(autoincrement())
+  messageId     String
+  articleNumber Int
+  /// 0 (not relevant) to 5 (exactly right).
+  value         Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  message       Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  article       Article  @relation(fields: [articleNumber], references: [number])
+
+  @@unique([messageId, articleNumber])
+  @@index([articleNumber])
 }
 
 /// Study notes the user asks the agent to keep.

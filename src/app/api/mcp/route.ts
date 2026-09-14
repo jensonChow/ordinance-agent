@@ -1,7 +1,7 @@
 import { ResourceTemplate } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
-import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesHybrid, searchQuestions } from "@/lib/law";
+import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesHybrid, searchQuestions, suggestTopics } from "@/lib/law";
 
 export const runtime = "nodejs";
 
@@ -14,6 +14,8 @@ function text(payload: unknown) {
  * Basic Law MCP server (Streamable HTTP, stateless) mounted at /api/mcp.
  * Any MCP client — the chat agent in this app, Claude, Cursor, Codex — can call these tools.
  */
+const CHAPTERS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"] as const;
+
 const handler = createMcpHandler(
   (server) => {
     server.registerTool(
@@ -32,23 +34,55 @@ const handler = createMcpHandler(
       {
         title: "Search articles",
         description:
-          "Search the 160 articles of the Basic Law. Fuses three retrieval paths by reciprocal rank: the study question bank, PostgreSQL full-text search (strict websearch syntax first, then loose any-term matching) and sentence-embedding similarity. Each hit reports which paths found it in `found_by`. Returns ranked hits with snippets; follow up with get_article for the full text before quoting.",
+          "Search the 160 articles of the Basic Law. Fuses three retrieval paths by reciprocal rank: the study question bank, PostgreSQL full-text search (strict websearch syntax first, then loose any-term matching) and sentence-embedding similarity. Each hit reports which paths found it in `found_by` and, when the question bank was one of them, the lay `model_questions` that map to it. Pass `chapters` to honour a topic the reader has chosen. Returns ranked hits with snippets; follow up with get_article for the full text before quoting.",
         inputSchema: z.object({
           query: z.string().min(2).max(200).describe("Search terms, e.g. 'permanent resident seven years'"),
           limit: z.number().int().min(1).max(10).default(5),
+          chapters: z
+            .array(z.enum(CHAPTERS))
+            .max(9)
+            .optional()
+            .describe("Restrict the search to these chapters, e.g. ['III'] once the reader has confirmed the topic"),
         }),
       },
-      async ({ query, limit }) => {
-        const hits = await searchArticlesHybrid(query, limit);
+      async ({ query, limit, chapters }) => {
+        const hits = await searchArticlesHybrid(query, limit, chapters);
         return text({
           query,
+          chapters: chapters ?? null,
           hits: hits.map((h) => ({
             article: h.number,
             citation: formatCitation(h.number),
             chapter: `${h.chapterNumber} ${h.chapterTitle}`,
             match: h.mode,
             found_by: h.sources ?? [],
+            model_questions: h.viaQuestions?.map((q) => q.text) ?? [],
             snippet: h.snippet,
+          })),
+        });
+      },
+    );
+
+    server.registerTool(
+      "suggest_topics",
+      {
+        title: "Suggest topics",
+        description:
+          "Rank the chapters of the Basic Law a situation is likely to fall under, before searching. Use it when the question is broad or the wording could belong to more than one chapter: offer the top chapters to the reader, let them confirm, then pass the confirmed chapters to search_articles. Returns chapters with a score and the articles that drove it.",
+        inputSchema: z.object({
+          query: z.string().min(2).max(300).describe("The situation or question in the reader's own words"),
+          limit: z.number().int().min(1).max(9).default(3),
+        }),
+      },
+      async ({ query, limit }) => {
+        const topics = await suggestTopics(query, limit);
+        return text({
+          query,
+          topics: topics.map((t) => ({
+            chapter: t.chapter,
+            title: t.title,
+            score: t.score,
+            articles: t.articles,
           })),
         });
       },
@@ -281,7 +315,7 @@ Give: one sentence on what it does; the operative wording quoted; what it does n
       }),
     );
   },
-  { serverInfo: { name: "basic-law-mcp", version: "0.2.0" } },
+  { serverInfo: { name: "basic-law-mcp", version: "0.3.0" } },
 );
 
 export { handler as GET, handler as POST, handler as DELETE };

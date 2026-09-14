@@ -27,6 +27,14 @@ export type ArticleProvenance = {
   mentioned: boolean;
   /** Retrieval paths that surfaced it, in call order, e.g. "question bank (qb-055)", "full-text search (loose)". */
   found: string[];
+  /**
+   * The lay questions from the study bank that map to this article. The AI CLIC Recommender shows its results as
+   * these "model questions" rather than as documents, because a reader recognises their own question faster than
+   * they recognise a provision; the same idea here tells the reader which question the retrieval actually matched.
+   */
+  modelQuestions?: string[];
+  /** The search snippet, kept so the article panel can show the passage retrieval matched on. */
+  excerpt?: string;
 };
 
 /** Verdict for one article chip: read in full, surfaced by retrieval only, or named without any lookup. */
@@ -63,6 +71,11 @@ function searchLabels(hit: { match?: string; found_by?: string[] }): string[] {
 export function messageCitations(message: UIMessage): MessageCitations {
   const provenance: Record<number, ArticleProvenance> = {};
   const entry = (n: number) => (provenance[n] ??= { read: false, mentioned: false, found: [] });
+  const addQuestion = (n: number, q: string) => {
+    const e = entry(n);
+    e.modelQuestions ??= [];
+    if (q && !e.modelQuestions.includes(q)) e.modelQuestions.push(q);
+  };
   const addFound = (n: number, label: string) => {
     const e = entry(n);
     if (!e.found.includes(label)) e.found.push(label);
@@ -90,8 +103,8 @@ export function messageCitations(message: UIMessage): MessageCitations {
       | {
           article?: number;
           articles?: { article?: number }[];
-          hits?: { article?: number; match?: string; found_by?: string[] }[];
-          questions?: { id?: string; articles?: number[] }[];
+          hits?: { article?: number; match?: string; found_by?: string[]; model_questions?: string[]; snippet?: string }[];
+          questions?: { id?: string; question?: string; articles?: number[] }[];
         }
       | undefined;
     if (!out) continue;
@@ -105,13 +118,21 @@ export function messageCitations(message: UIMessage): MessageCitations {
       for (const h of out.hits ?? []) {
         if (!inRange(h?.article)) continue;
         for (const label of searchLabels(h)) addFound(h.article!, label);
+        for (const q of h.model_questions ?? []) addQuestion(h.article!, q);
+        // First snippet wins: search runs before the agent reads, so this is the passage that earned the hit.
+        const e = entry(h.article!);
+        if (!e.excerpt && h.snippet) e.excerpt = h.snippet;
       }
       continue;
     }
     if (name === "find_questions") {
       for (const q of out.questions ?? []) {
         const label = q?.id ? `question bank (${q.id})` : "question bank";
-        for (const n of q?.articles ?? []) if (inRange(n)) addFound(n, label);
+        for (const n of q?.articles ?? []) {
+          if (!inRange(n)) continue;
+          addFound(n, label);
+          if (q?.question) addQuestion(n, q.question);
+        }
       }
     }
   }

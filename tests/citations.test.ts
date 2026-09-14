@@ -90,6 +90,54 @@ describe("citationStatus / explainProvenance", () => {
     expect(citationStatus(p)).toBe("unverified");
     expect(explainProvenance(106, p)).toMatch(/never returned by a tool/);
   });
+  it("carries the matched model questions and the passage retrieval matched on", () => {
+    const message: UIMessage = {
+      id: "a_3",
+      role: "assistant",
+      parts: [
+        {
+          type: "dynamic-tool",
+          toolName: "find_questions",
+          toolCallId: "q1",
+          state: "output-available",
+          input: { query: "free port" },
+          output: mcpOutput({
+            questions: [{ id: "qb-055", question: "Do I pay customs duty on goods brought into Hong Kong?", articles: [114] }],
+          }),
+        },
+        {
+          type: "dynamic-tool",
+          toolName: "search_articles",
+          toolCallId: "s1",
+          state: "output-available",
+          input: { query: "free port" },
+          output: mcpOutput({
+            hits: [
+              {
+                article: 114,
+                found_by: ["question bank", "semantic"],
+                model_questions: ["Do I pay customs duty on goods brought into Hong Kong?", "Is Hong Kong a free port?"],
+                snippet: "The HKSAR shall remain a **free port**",
+              },
+            ],
+          }),
+        },
+        { type: "text", text: "Article 114 keeps Hong Kong a free port." },
+      ] as UIMessage["parts"],
+    };
+    const p = messageCitations(message).provenance[114];
+    // The bank hit is recorded once, not twice, even though two tools reported it.
+    expect(p.modelQuestions).toEqual([
+      "Do I pay customs duty on goods brought into Hong Kong?",
+      "Is Hong Kong a free port?",
+    ]);
+    expect(p.excerpt).toContain("free port");
+  });
+
+  it("leaves modelQuestions unset when the bank had nothing to say", () => {
+    expect(messageCitations(assistant).provenance[24].modelQuestions).toBeUndefined();
+  });
+
   it("ranks read above merely retrieved", () => {
     expect(citationStatus({ read: true, mentioned: false, found: ["question bank (qb-055)"] })).toBe("read");
     expect(citationStatus({ read: false, mentioned: false, found: ["full-text search (strict)"] })).toBe("retrieved");

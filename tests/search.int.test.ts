@@ -54,3 +54,38 @@ describe.skipIf(!hasDb)("hybrid retrieval", () => {
     for (const s of sources) expect(["question bank", "full-text", "semantic"]).toContain(s);
   });
 });
+
+/* Topic narrowing: the chapters a reader ticks must actually constrain retrieval, not just the prompt. */
+describe.skipIf(!hasDb)("topic narrowing", () => {
+  it("keeps retrieval inside the chapters the reader chose", async () => {
+    const { searchArticlesHybrid } = await import("@/lib/law");
+    const q = "Can I be arrested without a lawful reason?";
+    const all = await searchArticlesHybrid(q, 5);
+    expect(all.some((h) => h.chapterNumber === "III")).toBe(true); // where the question really belongs
+    const narrowed = await searchArticlesHybrid(q, 5, ["V"]);
+    expect(narrowed.every((h) => h.chapterNumber === "V")).toBe(true);
+    expect(narrowed.some((h) => h.chapterNumber === "III")).toBe(false);
+  });
+
+  it("still returns hits when the chosen chapter is the right one", async () => {
+    const { searchArticlesHybrid } = await import("@/lib/law");
+    const hits = await searchArticlesHybrid("Does Hong Kong keep its own tax revenue?", 5, ["V"]);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((h) => h.chapterNumber === "V")).toBe(true);
+  });
+
+  it("suggests the chapter a lay question belongs to, best first", async () => {
+    const { suggestTopics } = await import("@/lib/law");
+    const topics = await suggestTopics("Can I be arrested without a lawful reason?", 3);
+    expect(topics.length).toBeGreaterThan(0);
+    expect(topics.map((t) => t.chapter)).toContain("III");
+    expect(topics[0].score).toBeGreaterThanOrEqual(topics[topics.length - 1].score);
+  });
+
+  it("names the study question that sent the agent to an article", async () => {
+    const { searchArticlesHybrid } = await import("@/lib/law");
+    const hits = await searchArticlesHybrid("Do I pay customs duty on goods I bring into Hong Kong?", 5);
+    const hit = hits.find((h) => h.number === 114);
+    expect(hit?.viaQuestions?.length ?? 0).toBeGreaterThan(0);
+  });
+});

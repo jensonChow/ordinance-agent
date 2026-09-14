@@ -10,13 +10,16 @@ Azure OpenAI**, plus a tiny **Flask/Gunicorn** side-service — rather than as a
 
 ```
 Next.js 16 (App Router, TypeScript)
-├─ /                 chat UI (@ai-sdk/react useChat) + notes / corpus sidebar (server-rendered from Prisma)
+├─ /                 chat UI (@ai-sdk/react useChat) + topic chips + notes / corpus sidebar (server-rendered from Prisma)
+├─ /article/[n]      permanent, linkable page for one article + the study questions that lead to it
+├─ /eval             the retrieval benchmark and the reader ratings, rendered from the same data the CLI prints
 ├─ /api/chat         agent loop: streamText + tool calling, stopWhen isStepCount(8)
 │                    tools = MCP tools discovered at runtime (@ai-sdk/mcp)  +  local Prisma tools (save_note, list_notes, format_citation)
 ├─ /api/mcp          Basic Law MCP server (mcp-handler, Streamable HTTP, stateless) — usable from Claude / Cursor / Codex too
-│                    6 tools · 2 resources + an article template · 3 prompts
+│                    7 tools · 2 resources + an article template · 3 prompts
+├─ /api/ratings      0-5 relevance judgements on a cited article, upserted per (message, article)
 ├─ /api/conversations, /api/notes
-├─ prisma/           schema (Chapter, Section, Article, Annex, Conversation, Message, ToolCall, Citation, Note), migrations, seed
+├─ prisma/           schema (Chapter, Section, Article, Annex, Conversation, Message, ToolCall, Citation, Rating, Note), migrations, seed
 ├─ data/             basic-law.en.json  ←  scripts/parse_basic_law.py  ←  official booklet PDF
 │                    question-bank.json — 80 lay questions → articles, each with 2 held-out paraphrases for evaluation
 ├─ scripts/embed-corpus.ts     writes 384-dim sentence embeddings into PostgreSQL (npm run embed)
@@ -42,7 +45,8 @@ flowchart LR
 |---|---|---|
 | `list_chapters` | MCP server | Nine chapters, their sections and article ranges |
 | `find_questions` | MCP server | Matches an everyday-language question against the **study question bank** (80 lay questions → the articles that answer them) |
-| `search_articles` | MCP server | **Hybrid retrieval**: the question bank (lexical + vector), PostgreSQL full-text search (strict `websearch_to_tsquery`, then loose any-term over de-boilerplated text) and sentence-embedding similarity, fused by reciprocal rank. Every hit reports `found_by`, the paths that returned it |
+| `suggest_topics` | MCP server | Ranks the chapters a situation is likely to fall under, **before** searching, so a reader with no legal vocabulary can confirm or correct the topic |
+| `search_articles` | MCP server | **Hybrid retrieval**: the question bank (lexical + vector), PostgreSQL full-text search (strict `websearch_to_tsquery`, then loose any-term over de-boilerplated text) and sentence-embedding similarity, fused by reciprocal rank. Every hit reports `found_by` (the paths that returned it) and `model_questions` (the lay questions that map to it); `chapters` restricts it to a topic the reader picked |
 | `get_article` / `get_articles` | MCP server | Full text of one article or a range, with chapter/section and NPCSC-interpretation footnotes |
 | `get_annex` | MCP server | Annexes I–III |
 | `save_note` / `list_notes` | local (Prisma) | Study notes, optionally attached to an article |
@@ -63,6 +67,9 @@ never from the prose:
 | green, `Art. 24 fts` | the agent read the full text; `fts` / `qb` says whether full-text search or the question bank surfaced it |
 | plain | retrieval returned it, but the full text was never read |
 | **amber, `Art. 106 ⚠`** | the answer names it and **no tool ever returned it** — the number came from the model's memory |
+
+Opening a chip shows the article in full, the **study question the retrieval actually matched**, the passage that
+earned the hit, and a 0-5 relevance rating.
 
 `messageCitations()` in `src/lib/citations.ts` computes this. The mock provider deliberately ends one scripted answer
 by naming an article it did not read, so the amber state is reachable from `npm test` and from the keyless smoke run
@@ -116,6 +123,28 @@ Two results worth stating plainly rather than burying:
 The numbers are retrieval only — whether the *article* is found — not answer quality; the agent still reads the
 article with `get_article` and quotes it. The remaining test misses are mostly questions whose primary article is
 one of several plausible ones (`any@5` is 92.5%).
+
+## What this borrows from the AI CLIC Recommender
+
+The [AI CLIC Recommender](https://ai.hklii.hk/recommender/) is a public tool from the University of Hong Kong's Law
+and Technology Centre, which also runs [HKLII](https://www.hklii.hk) and [CLIC](https://clic.org.hk). This project is
+not affiliated with any of them; it is a study sample built on a public government text. But the Recommender has
+already solved problems this kind of application runs into, and three of its design choices are worth copying rather
+than reinventing:
+
+| What the Recommender does | What this project does with it |
+|---|---|
+| Asks you to describe a situation, then has you **confirm the topics** it inferred before it returns anything | `suggest_topics` ranks chapters from the same retrieval that is about to run, the answer offers them as chips, and the chapters the reader ticks are passed to `search_articles` as a SQL filter — not merely mentioned in the prompt |
+| Presents each result as a **model question** standing for a page, not as a document | The study bank plays that role here: every hit carries the lay questions that map to it, and the article panel names the one that matched |
+| Puts **"Is this recommendation relevant?" (0-5)** under every result | `/api/ratings` stores the same judgement per (answer, article) in PostgreSQL, and `/eval` shows the distribution beside the offline benchmark |
+
+The last one matters most. The benchmark below measures whether retrieval found the article *the question bank says
+is correct*. A reader's 0-5 score measures whether it was any use — a different question, and not one an automatic
+metric can answer. Having both in the same page is the point.
+
+Where it deliberately differs: the Recommender recommends pages and stops there, while this answers in prose. That
+is a heavier promise, which is why every answer carries the citation audit above and flags any article it named
+without opening.
 
 ## Run it locally
 
@@ -218,7 +247,9 @@ repository reproduces it solely as a study corpus.
   HNSW index and nothing else in the query layer would change.
 - If the model cannot be loaded (offline, or `DENSE_RETRIEVAL=off`), dense search returns nothing and the fusion
   degrades to exactly the previous question-bank + full-text behaviour rather than failing.
-- Single-tenant: no auth; a conversation is addressed by its id in the URL.
+- Single-tenant: no auth; a conversation is addressed by its id in the URL. Relevance ratings are therefore
+  unauthenticated too — fine for a sample, but a real deployment collecting them for research would need a per-reader
+  identity before the numbers meant anything.
 - The mock provider is scripted, not a model; it exercises the plumbing, not answer quality.
 - Azure OpenAI is wired through the official AI SDK provider but only runs when you supply an Azure deployment.
 

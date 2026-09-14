@@ -8,12 +8,12 @@
  */
 const base = process.argv[2] ?? "http://127.0.0.1:3000";
 
-async function turn(conversationId, id, text, history) {
+async function turn(conversationId, id, text, history, extra = {}) {
   const messages = [...history, { id, role: "user", parts: [{ type: "text", text }] }];
   const res = await fetch(`${base}/api/chat`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ messages, conversationId }),
+    body: JSON.stringify({ messages, conversationId, ...extra }),
   });
   if (!res.ok) throw new Error(`/api/chat ${res.status}: ${await res.text()}`);
   const chunks = [];
@@ -37,11 +37,13 @@ async function turn(conversationId, id, text, history) {
 }
 
 function summarise(chunks) {
-  const tools = chunks.filter((c) => c.type === "tool-input-available").map((c) => c.toolName);
+  const calls = chunks.filter((c) => c.type === "tool-input-available");
+  const tools = calls.map((c) => c.toolName);
+  const inputs = Object.fromEntries(calls.map((c) => [c.toolName, c.input]));
   const outputs = chunks.filter((c) => c.type === "tool-output-available").length;
   const text = chunks.filter((c) => c.type === "text-delta").map((c) => c.delta).join("");
   const finish = chunks.find((c) => c.type === "finish");
-  return { tools, outputs, text, finish: finish?.finishReason ?? null, chunkTypes: [...new Set(chunks.map((c) => c.type))] };
+  return { tools, inputs, outputs, text, finish: finish?.finishReason ?? null, chunkTypes: [...new Set(chunks.map((c) => c.type))] };
 }
 
 const conv = await fetch(`${base}/api/conversations`, { method: "POST", headers: { "content-type": "application/json" }, body: "{}" }).then((r) => r.json());
@@ -65,9 +67,21 @@ console.log("turn 3", JSON.stringify(t3, null, 1));
 // unverified-citation guard has something to catch. See src/lib/mock-model.ts and src/lib/citations.ts.
 const namesUnread = t3.text.includes("Article 106");
 
+// Turn 4: a question whose chapter is not obvious — the agent offers topics before it searches.
+const broad = "Which chapter of the Basic Law covers speaking and publishing?";
+const t4 = summarise(await turn(conv.id, "u4", broad, []));
+console.log("turn 4", JSON.stringify(t4, null, 1));
+
+// Turn 5: the same question with the reader's chapter selection attached — it must reach the search tool.
+const t5 = summarise(await turn(conv.id, "u5", broad, [], { chapters: ["III"] }));
+console.log("turn 5", JSON.stringify(t5, null, 1));
+const narrowedSearch = JSON.stringify(t5.inputs?.search_articles ?? {}).includes('"chapters":["III"]');
+
 const ok =
   t1.tools.includes("search_articles") && t1.tools.includes("get_article") && t1.outputs >= 2 && t1.text.includes("Article 24") &&
   t2.tools.includes("save_note") && t2.outputs >= 1 &&
-  t3.tools.includes("find_questions") && t3.tools.includes("get_article") && t3.text.includes("Article 114") && namesUnread;
+  t3.tools.includes("find_questions") && t3.tools.includes("get_article") && t3.text.includes("Article 114") && namesUnread &&
+  t4.tools.includes("suggest_topics") && t4.text.includes("Article 27") &&
+  t5.tools.includes("suggest_topics") && narrowedSearch;
 console.log(ok ? "SMOKE OK" : "SMOKE FAILED");
 process.exit(ok ? 0 : 1);

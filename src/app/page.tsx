@@ -50,16 +50,27 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:flex-row">
       <section className="flex min-h-[70vh] flex-1 flex-col">
         <header className="mb-4">
-          <h1 className="text-xl font-semibold tracking-tight">Basic Law Study Agent</h1>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="text-xl font-semibold tracking-tight">Basic Law Study Agent</h1>
+            <Link href="/eval" className="text-xs text-neutral-500 underline-offset-2 hover:underline">
+              How well does the retrieval work?
+            </Link>
+          </div>
           <p className="text-sm text-neutral-500">
             An agent that reads the Basic Law of the HKSAR through MCP tools, cites the articles it read, and keeps your
-            notes in PostgreSQL. Study aid only — not legal advice.
+            notes in PostgreSQL.
+          </p>
+          <p className="mt-2 rounded-md border-l-4 border-amber-400 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
+            <strong>This is a study aid, not legal advice.</strong> It answers only from the text of the Basic Law and
+            can be wrong or incomplete. For any real matter, consult a lawyer. Every answer shows which articles were
+            read, and flags any article named without being looked up.
           </p>
         </header>
         <Chat
           conversationId={conversation.id}
           initialMessages={initialMessages}
           starters={starters.map((s) => s.text)}
+          chapters={chapters}
         />
       </section>
 
@@ -120,8 +131,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ c
         <div className="rounded-lg border border-neutral-200 p-4 dark:border-neutral-800">
           <h2 className="mb-2 font-medium">MCP endpoint</h2>
           <p className="text-neutral-500">
-            The same six tools are exposed at <code className="font-mono text-xs">/api/mcp</code> (Streamable HTTP) for
-            Claude, Cursor or any MCP client.
+            The same seven tools are exposed at <code className="font-mono text-xs">/api/mcp</code> (Streamable HTTP)
+            for Claude, Cursor or any MCP client, along with two resources, an article resource template and three
+            prompts.
           </p>
         </div>
       </aside>

@@ -18,13 +18,39 @@ export function createMockModel(): LanguageModelV3 {
           ? lastUser.content.map((p) => ("text" in p ? p.text : "")).join(" ")
           : "";
       const wantsNote = /\bnote\b/i.test(userText);
+      // Chapters the reader ticked reach the model only through the system prompt, so read them back out here:
+      // it proves the narrowing survived the trip from the chip row to the tool call.
+      const system = options.prompt.find((m) => m.role === "system");
+      const systemText = typeof system?.content === "string" ? system.content : "";
+      const narrowed = systemText.match(/chapters: (\[[^\]]*\])/)?.[1];
+      const chosen: string[] | null = narrowed ? (JSON.parse(narrowed) as string[]) : null;
+      // Broad-wording branch: the chapter is not obvious from the question, so the agent offers topics first.
+      const broadQuestion = /which chapter|what topic|where in the basic law/i.test(userText);
       // Lay-wording branch: goes through the question bank, and deliberately ends by naming one article it never
       // read (Article 106). That is not a bug — it is the fixture for the unverified-citation guard in the UI
       // (src/lib/citations.ts), so the amber chip can be demonstrated without a live model.
       const layQuestion = /customs|duty|duties|import|bring in/i.test(userText);
 
       let parts: LanguageModelV3StreamPart[];
-      if (layQuestion && !wantsNote) {
+      if (broadQuestion && !wantsNote) {
+        if (toolSteps === 0) {
+          parts = toolCall("call_topics", "suggest_topics", { query: userText.slice(0, 300), limit: 3 });
+        } else if (toolSteps === 1) {
+          parts = toolCall("call_search_narrowed", "search_articles", {
+            query: userText.slice(0, 200),
+            limit: 5,
+            ...(chosen?.length ? { chapters: chosen } : {}),
+          });
+        } else if (toolSteps === 2) {
+          parts = toolCall("call_get_27", "get_article", { number: 27 });
+        } else {
+          parts = text(
+            `This sits in Chapter III, Fundamental Rights and Duties of the Residents${
+              chosen?.length ? ` (you narrowed the search to Chapter ${chosen.join(", ")})` : ""
+            }. Article 27 gives Hong Kong residents “freedom of speech, of the press and of publication”, along with freedom of association, of assembly, of procession and of demonstration. Tick a different chapter above if you meant something else.`,
+          );
+        }
+      } else if (layQuestion && !wantsNote) {
         if (toolSteps === 0) {
           parts = toolCall("call_find", "find_questions", { query: userText.slice(0, 300), limit: 3 });
         } else if (toolSteps === 1) {
