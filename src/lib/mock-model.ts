@@ -26,6 +26,19 @@ export function createMockModel(): LanguageModelV3 {
       const chosen: string[] | null = narrowed ? (JSON.parse(narrowed) as string[]) : null;
       // Broad-wording branch: the chapter is not obvious from the question, so the agent offers topics first.
       const broadQuestion = /which chapter|what topic|where in the basic law/i.test(userText);
+      // The one question the scripted answer below is actually about.
+      const residencyQuestion = /permanent resident|right of abode|article 24/i.test(userText);
+      // Article numbers any tool has already returned in this turn, read back out of the prompt. A scripted model
+      // has no other way to know them, and the honest fallback below must not name an article retrieval never saw.
+      const returned = [
+        ...new Set(
+          [
+            ...JSON.stringify(options.prompt.filter((m) => m.role === "tool")).matchAll(/\\?"article\\?"\s*:\s*(\d+)/g),
+          ].map((m) => Number(m[1])),
+        ),
+      ]
+        .filter((n) => n >= 1 && n <= 160)
+        .slice(0, 5);
       // Lay-wording branch: goes through the question bank, and deliberately ends by naming one article it never
       // read (Article 106). That is not a bug — it is the fixture for the unverified-citation guard in the UI
       // (src/lib/citations.ts), so the amber chip can be demonstrated without a live model.
@@ -64,13 +77,27 @@ export function createMockModel(): LanguageModelV3 {
         parts = toolCall("call_note", "save_note", { body: userText.replace(/^.*?note:?\s*/i, "").trim() || userText, article: 39 });
       } else if (wantsNote) {
         parts = text("Saved your note against Article 39. Say “list my notes” any time to review them.");
-      } else if (toolSteps === 0) {
+      } else if (residencyQuestion && toolSteps === 0) {
         parts = toolCall("call_search", "search_articles", { query: "permanent resident seven years", limit: 3 });
-      } else if (toolSteps === 1) {
+      } else if (residencyQuestion && toolSteps === 1) {
         parts = toolCall("call_get", "get_article", { number: 24 });
-      } else {
+      } else if (residencyQuestion) {
         parts = text(
           "Under Article 24(2), permanent residents include Chinese citizens who have ordinarily resided in Hong Kong for a continuous period of not less than seven years, and under Article 24(4) non-Chinese nationals who meet the same seven-year test and have taken Hong Kong as their place of permanent residence. Note the footnote: category (3) was the subject of an NPCSC interpretation on 26 June 1999.",
+        );
+      } else if (toolSteps === 0) {
+        // Anything this script was not written for. Run the real retrieval, then say plainly that no answer is
+        // coming rather than returning a canned answer to a question nobody asked — which is what a scripted model
+        // pretending to be general would do, and is exactly the failure this project is about.
+        parts = toolCall("call_search_any", "search_articles", { query: userText.slice(0, 200), limit: 5 });
+      } else {
+        const found = returned.length ? returned.map((n) => `Article ${n}`).join(", ") : null;
+        parts = text(
+          `**This deployment runs a scripted stand-in, not a language model**, so it will not compose an answer to that question. Everything else on the page is real — the search above ran against all 160 articles in PostgreSQL and ${
+            found
+              ? `returned ${found}. Open any of them to read the full text, see which study question matched, and rate whether it was relevant; those ratings feed the evaluation page.`
+              : "returned nothing it could rank, which is itself a real result rather than a scripted one."
+          }\n\nSet \`OPENAI_COMPATIBLE_*\` or \`AZURE_*\` (see \`.env.example\`) and the same tool loop runs against a real model.`,
         );
       }
       return {
