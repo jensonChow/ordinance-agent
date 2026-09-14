@@ -9,7 +9,15 @@
 import "dotenv/config";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
-import { searchArticles, searchArticlesLoose, searchArticlesSmart, searchQuestions } from "../src/lib/law";
+import {
+  searchArticles,
+  searchArticlesDense,
+  searchArticlesHybrid,
+  searchArticlesLoose,
+  searchArticlesSmart,
+  searchQuestions,
+  searchQuestionsDense,
+} from "../src/lib/law";
 import { prisma } from "../src/lib/prisma";
 
 type Q = { id: string; question: string; variants: string[]; articles: number[] };
@@ -28,6 +36,9 @@ const strategies: Record<string, Strategy> = {
     const fromFts = (await searchArticlesSmart(q, 5)).map((h) => h.number);
     return dedupe([...fromBank, ...fromFts]).slice(0, 5);
   },
+  "dense (articles)": async (q) => (await searchArticlesDense(q, 5)).map((h) => h.number),
+  "dense (question bank)": async (q) => dedupe((await searchQuestionsDense(q, 3)).flatMap((h) => h.articles)).slice(0, 5),
+  "hybrid RRF (bank ×2 + FTS + dense)": async (q) => (await searchArticlesHybrid(q, 5)).map((h) => h.number),
 };
 
 async function main() {

@@ -39,6 +39,10 @@ model Article {
   text          String
   /// `text` with the boilerplate phrases every article repeats ("of the Hong Kong Special Administrative Region", "of the People's Republic of China") removed; used by loose full-text search so those words stop dominating density ranking.
   searchText    String   @default("")
+  /// L2-normalised sentence embedding of `text` (all-MiniLM-L6-v2, 384 dims), written by `npm run embed`.
+  /// A plain float array, not pgvector: at 160 articles a sequential scan beats any ANN index and the schema
+  /// stays portable. See the README for where pgvector would drop in on a corpus the size of HKLII.
+  embedding     Float[]  @default([])
   notes         String[] @default([])
   chapter       Chapter  @relation(fields: [chapterNumber], references: [number])
   section       Section? @relation(fields: [sectionId], references: [id])
@@ -130,4 +134,6 @@ model Question {
   tags     String[] @default([])
   /// text + tags joined at seed time; indexed with to_tsvector (array_to_string is not IMMUTABLE, so it cannot sit in the index expression).
   searchText String @default("")
+  /// L2-normalised embedding of `text` — the canonical question only, never the held-out variants.
+  embedding  Float[] @default([])
 }

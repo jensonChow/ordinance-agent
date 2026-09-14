@@ -1,7 +1,7 @@
 import { ResourceTemplate } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
-import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesSmart, searchQuestions } from "@/lib/law";
+import { formatCitation, getAnnex, getArticle, getArticleRange, listChapters, listQuestions, searchArticlesHybrid, searchQuestions } from "@/lib/law";
 
 export const runtime = "nodejs";
 
@@ -32,14 +32,14 @@ const handler = createMcpHandler(
       {
         title: "Search articles",
         description:
-          "Full-text search over the 160 articles of the Basic Law. Strict matches (PostgreSQL websearch syntax: quoted phrases, OR, -exclusions) come first, then loose any-term matches fill the list; each hit says which. Returns ranked hits with highlighted snippets. Follow up with get_article for the full text before quoting.",
+          "Search the 160 articles of the Basic Law. Fuses three retrieval paths by reciprocal rank: the study question bank, PostgreSQL full-text search (strict websearch syntax first, then loose any-term matching) and sentence-embedding similarity. Each hit reports which paths found it in `found_by`. Returns ranked hits with snippets; follow up with get_article for the full text before quoting.",
         inputSchema: z.object({
           query: z.string().min(2).max(200).describe("Search terms, e.g. 'permanent resident seven years'"),
           limit: z.number().int().min(1).max(10).default(5),
         }),
       },
       async ({ query, limit }) => {
-        const hits = await searchArticlesSmart(query, limit);
+        const hits = await searchArticlesHybrid(query, limit);
         return text({
           query,
           hits: hits.map((h) => ({
@@ -47,7 +47,7 @@ const handler = createMcpHandler(
             citation: formatCitation(h.number),
             chapter: `${h.chapterNumber} ${h.chapterTitle}`,
             match: h.mode,
-            rank: Number(h.rank.toFixed(4)),
+            found_by: h.sources ?? [],
             snippet: h.snippet,
           })),
         });

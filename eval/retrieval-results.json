@@ -130,6 +130,84 @@
         "primary@5": 0.875,
         "any@5": 0.9
       }
+    },
+    "dense (articles)": {
+      "dev": {
+        "primary@1": 0.625,
+        "any@1": 0.7125,
+        "primary@3": 0.7625,
+        "any@3": 0.825,
+        "primary@5": 0.8375,
+        "any@5": 0.875
+      },
+      "test": {
+        "primary@1": 0.5875,
+        "any@1": 0.7,
+        "primary@3": 0.825,
+        "any@3": 0.9,
+        "primary@5": 0.8625,
+        "any@5": 0.9375
+      },
+      "all": {
+        "primary@1": 0.60625,
+        "any@1": 0.70625,
+        "primary@3": 0.79375,
+        "any@3": 0.8625,
+        "primary@5": 0.85,
+        "any@5": 0.90625
+      }
+    },
+    "dense (question bank)": {
+      "dev": {
+        "primary@1": 0.55,
+        "any@1": 0.55,
+        "primary@3": 0.7375,
+        "any@3": 0.7375,
+        "primary@5": 0.775,
+        "any@5": 0.7875
+      },
+      "test": {
+        "primary@1": 0.5625,
+        "any@1": 0.5625,
+        "primary@3": 0.6875,
+        "any@3": 0.6875,
+        "primary@5": 0.7375,
+        "any@5": 0.7375
+      },
+      "all": {
+        "primary@1": 0.55625,
+        "any@1": 0.55625,
+        "primary@3": 0.7125,
+        "any@3": 0.7125,
+        "primary@5": 0.75625,
+        "any@5": 0.7625
+      }
+    },
+    "hybrid RRF (bank ×2 + FTS + dense)": {
+      "dev": {
+        "primary@1": 0.7875,
+        "any@1": 0.8625,
+        "primary@3": 0.925,
+        "any@3": 0.9625,
+        "primary@5": 0.9625,
+        "any@5": 0.975
+      },
+      "test": {
+        "primary@1": 0.6375,
+        "any@1": 0.7375,
+        "primary@3": 0.825,
+        "any@3": 0.875,
+        "primary@5": 0.8875,
+        "any@5": 0.925
+      },
+      "all": {
+        "primary@1": 0.7125,
+        "any@1": 0.8,
+        "primary@3": 0.875,
+        "any@3": 0.91875,
+        "primary@5": 0.925,
+        "any@5": 0.95
+      }
     }
   },
   "misses": {
@@ -3020,6 +3098,944 @@
           159,
           17,
           158
+        ]
+      }
+    ],
+    "dense (articles)": [
+      {
+        "id": "qb-004",
+        "split": "test",
+        "query": "Is discrimination in the application of law prohibited?",
+        "primary": 25,
+        "got": [
+          39,
+          29,
+          36,
+          37,
+          28
+        ]
+      },
+      {
+        "id": "qb-006",
+        "split": "dev",
+        "query": "Can I publish an article criticising the government?",
+        "primary": 27,
+        "got": [
+          140,
+          64,
+          11,
+          17,
+          73
+        ]
+      },
+      {
+        "id": "qb-015",
+        "split": "test",
+        "query": "Can I sue the government or its officials?",
+        "primary": 35,
+        "got": [
+          73,
+          17,
+          64,
+          48,
+          158
+        ]
+      },
+      {
+        "id": "qb-018",
+        "split": "dev",
+        "query": "Does the ICCPR still apply after 1997?",
+        "primary": 39,
+        "got": [
+          120,
+          121,
+          70,
+          86,
+          91
+        ]
+      },
+      {
+        "id": "qb-021",
+        "split": "test",
+        "query": "What duties do residents have?",
+        "primary": 42,
+        "got": [
+          99,
+          21,
+          62,
+          100,
+          97
+        ]
+      },
+      {
+        "id": "qb-022",
+        "split": "dev",
+        "query": "How old must the Chief Executive be?",
+        "primary": 44,
+        "got": [
+          46,
+          53,
+          15,
+          71,
+          56
+        ]
+      },
+      {
+        "id": "qb-030",
+        "split": "test",
+        "query": "Does the Chief Executive have to follow ExCo's advice?",
+        "primary": 54,
+        "got": [
+          56,
+          53,
+          47,
+          50,
+          73
+        ]
+      },
+      {
+        "id": "qb-031",
+        "split": "dev",
+        "query": "Who does the ICAC report to?",
+        "primary": 57,
+        "got": [
+          77,
+          54,
+          150,
+          65,
+          130
+        ]
+      },
+      {
+        "id": "qb-033",
+        "split": "dev",
+        "query": "Does LegCo approve taxes and public spending?",
+        "primary": 64,
+        "got": [
+          51,
+          106,
+          108,
+          107,
+          65
+        ]
+      },
+      {
+        "id": "qb-035",
+        "split": "test",
+        "query": "What does the Basic Law say about the ultimate aim for LegCo elections?",
+        "primary": 68,
+        "got": [
+          26,
+          98,
+          159,
+          17,
+          87
+        ]
+      },
+      {
+        "id": "qb-044",
+        "split": "test",
+        "query": "Must the Chief Justice be a Chinese citizen?",
+        "primary": 92,
+        "got": [
+          90,
+          44,
+          104,
+          71,
+          47
+        ]
+      },
+      {
+        "id": "qb-046",
+        "split": "dev",
+        "query": "Can a foreigner work in the Hong Kong government?",
+        "primary": 99,
+        "got": [
+          101,
+          44,
+          61,
+          94,
+          102
+        ]
+      },
+      {
+        "id": "qb-055",
+        "split": "dev",
+        "query": "Do I pay customs duty on goods brought into Hong Kong?",
+        "primary": 114,
+        "got": [
+          116,
+          102,
+          125,
+          42,
+          117
+        ]
+      },
+      {
+        "id": "qb-058",
+        "split": "test",
+        "query": "Can foreign warships enter Hong Kong ports freely?",
+        "primary": 125,
+        "got": [
+          126,
+          114,
+          127,
+          31,
+          112
+        ]
+      },
+      {
+        "id": "qb-060",
+        "split": "dev",
+        "query": "Can universities keep their autonomy and academic freedom?",
+        "primary": 136,
+        "got": [
+          137,
+          34,
+          31,
+          32,
+          33
+        ]
+      },
+      {
+        "id": "qb-063",
+        "split": "test",
+        "query": "Can Hong Kong stay in international organisations China is not a member of?",
+        "primary": 153,
+        "got": [
+          61,
+          152,
+          67,
+          149,
+          44
+        ]
+      },
+      {
+        "id": "qb-069",
+        "split": "dev",
+        "query": "Does PRC national law apply in Hong Kong?",
+        "primary": 18,
+        "got": [
+          147,
+          25,
+          160,
+          159,
+          42
+        ]
+      },
+      {
+        "id": "qb-070",
+        "split": "dev",
+        "query": "Do mainland offices in Hong Kong have to follow Hong Kong law?",
+        "primary": 22,
+        "got": [
+          160,
+          42,
+          147,
+          35,
+          25
+        ]
+      },
+      {
+        "id": "qb-070",
+        "split": "test",
+        "query": "Do people from other parts of China need approval to enter Hong Kong?",
+        "primary": 22,
+        "got": [
+          154,
+          61,
+          44,
+          42,
+          67
+        ]
+      },
+      {
+        "id": "qb-071",
+        "split": "dev",
+        "query": "What does Article 23 require?",
+        "primary": 23,
+        "got": [
+          84,
+          147,
+          11,
+          159,
+          39
+        ]
+      },
+      {
+        "id": "qb-078",
+        "split": "test",
+        "query": "Is Hong Kong directly under the Central People's Government?",
+        "primary": 2,
+        "got": [
+          13,
+          14,
+          20,
+          22,
+          12
+        ]
+      },
+      {
+        "id": "qb-079",
+        "split": "dev",
+        "query": "Do the courts have jurisdiction over all cases?",
+        "primary": 19,
+        "got": [
+          84,
+          80,
+          83,
+          85,
+          87
+        ]
+      },
+      {
+        "id": "qb-080",
+        "split": "dev",
+        "query": "What happens if a Hong Kong law contravenes the Basic Law?",
+        "primary": 11,
+        "got": [
+          160,
+          8,
+          42,
+          17,
+          23
+        ]
+      },
+      {
+        "id": "qb-080",
+        "split": "test",
+        "query": "Can the NPC Standing Committee return a Hong Kong law?",
+        "primary": 11,
+        "got": [
+          17,
+          160,
+          159,
+          49,
+          75
+        ]
+      }
+    ],
+    "dense (question bank)": [
+      {
+        "id": "qb-004",
+        "split": "dev",
+        "query": "Does the Basic Law promise equal treatment under the law?",
+        "primary": 25,
+        "got": [
+          158,
+          159,
+          11,
+          17
+        ]
+      },
+      {
+        "id": "qb-004",
+        "split": "test",
+        "query": "Is discrimination in the application of law prohibited?",
+        "primary": 25,
+        "got": [
+          77,
+          78,
+          27,
+          37
+        ]
+      },
+      {
+        "id": "qb-005",
+        "split": "dev",
+        "query": "Can non-permanent residents vote in Hong Kong elections?",
+        "primary": 26,
+        "got": [
+          21,
+          24
+        ]
+      },
+      {
+        "id": "qb-008",
+        "split": "test",
+        "query": "Is torture or inhuman treatment banned?",
+        "primary": 28,
+        "got": [
+          27,
+          39,
+          63
+        ]
+      },
+      {
+        "id": "qb-011",
+        "split": "test",
+        "query": "Can residents move to another country freely?",
+        "primary": 31,
+        "got": [
+          99,
+          101,
+          67,
+          40,
+          122
+        ]
+      },
+      {
+        "id": "qb-015",
+        "split": "dev",
+        "query": "Is legal advice confidential in Hong Kong?",
+        "primary": 35,
+        "got": [
+          94,
+          19,
+          11,
+          17
+        ]
+      },
+      {
+        "id": "qb-015",
+        "split": "test",
+        "query": "Can I sue the government or its officials?",
+        "primary": 35,
+        "got": [
+          105,
+          6,
+          77,
+          78,
+          64
+        ]
+      },
+      {
+        "id": "qb-018",
+        "split": "dev",
+        "query": "Does the ICCPR still apply after 1997?",
+        "primary": 39,
+        "got": [
+          8,
+          160,
+          18,
+          102,
+          121
+        ]
+      },
+      {
+        "id": "qb-018",
+        "split": "test",
+        "query": "Can the government restrict my rights, and what are the limits?",
+        "primary": 39,
+        "got": [
+          36,
+          145,
+          105,
+          6,
+          28
+        ]
+      },
+      {
+        "id": "qb-021",
+        "split": "test",
+        "query": "What duties do residents have?",
+        "primary": 42,
+        "got": [
+          99,
+          101,
+          41,
+          40,
+          122
+        ]
+      },
+      {
+        "id": "qb-029",
+        "split": "test",
+        "query": "How quickly must a new Chief Executive be selected after a vacancy?",
+        "primary": 53,
+        "got": [
+          45,
+          46,
+          44
+        ]
+      },
+      {
+        "id": "qb-030",
+        "split": "test",
+        "query": "Does the Chief Executive have to follow ExCo's advice?",
+        "primary": 54,
+        "got": [
+          45,
+          47,
+          52
+        ]
+      },
+      {
+        "id": "qb-035",
+        "split": "dev",
+        "query": "How is LegCo formed?",
+        "primary": 68,
+        "got": [
+          57,
+          79,
+          50,
+          49
+        ]
+      },
+      {
+        "id": "qb-035",
+        "split": "test",
+        "query": "What does the Basic Law say about the ultimate aim for LegCo elections?",
+        "primary": 68,
+        "got": [
+          158,
+          159,
+          26
+        ]
+      },
+      {
+        "id": "qb-039",
+        "split": "test",
+        "query": "Can judges from other common law countries sit on the Court of Final Appeal?",
+        "primary": 82,
+        "got": [
+          92,
+          90,
+          88,
+          89,
+          85
+        ]
+      },
+      {
+        "id": "qb-040",
+        "split": "dev",
+        "query": "Can a judge be sued for a judgment?",
+        "primary": 85,
+        "got": [
+          88,
+          89,
+          77,
+          78,
+          92
+        ]
+      },
+      {
+        "id": "qb-042",
+        "split": "test",
+        "query": "Are the old procedural rights in criminal cases kept?",
+        "primary": 87,
+        "got": [
+          86,
+          35,
+          63
+        ]
+      },
+      {
+        "id": "qb-046",
+        "split": "dev",
+        "query": "Can a foreigner work in the Hong Kong government?",
+        "primary": 99,
+        "got": [
+          21,
+          147,
+          42
+        ]
+      },
+      {
+        "id": "qb-049",
+        "split": "dev",
+        "query": "Is private property protected in Hong Kong?",
+        "primary": 105,
+        "got": [
+          27,
+          23,
+          18
+        ]
+      },
+      {
+        "id": "qb-050",
+        "split": "dev",
+        "query": "Are Hong Kong's finances separate from the mainland's?",
+        "primary": 106,
+        "got": [
+          107,
+          108,
+          111
+        ]
+      },
+      {
+        "id": "qb-051",
+        "split": "test",
+        "query": "What fiscal principles does the Basic Law set?",
+        "primary": 107,
+        "got": [
+          159,
+          158,
+          8,
+          160,
+          18
+        ]
+      },
+      {
+        "id": "qb-056",
+        "split": "dev",
+        "query": "Is Hong Kong a separate customs territory?",
+        "primary": 116,
+        "got": [
+          18,
+          108,
+          114,
+          115
+        ]
+      },
+      {
+        "id": "qb-058",
+        "split": "test",
+        "query": "Can foreign warships enter Hong Kong ports freely?",
+        "primary": 125,
+        "got": [
+          114,
+          115,
+          155,
+          23
+        ]
+      },
+      {
+        "id": "qb-060",
+        "split": "dev",
+        "query": "Can universities keep their autonomy and academic freedom?",
+        "primary": 136,
+        "got": [
+          32,
+          141,
+          34,
+          2,
+          12
+        ]
+      },
+      {
+        "id": "qb-063",
+        "split": "test",
+        "query": "Can Hong Kong stay in international organisations China is not a member of?",
+        "primary": 153,
+        "got": [
+          21,
+          24
+        ]
+      },
+      {
+        "id": "qb-064",
+        "split": "dev",
+        "query": "Can a non-Chinese resident get a Hong Kong travel document?",
+        "primary": 154,
+        "got": [
+          24,
+          42
+        ]
+      },
+      {
+        "id": "qb-064",
+        "split": "test",
+        "query": "Does Hong Kong control its own immigration?",
+        "primary": 154,
+        "got": [
+          23,
+          13,
+          151,
+          25
+        ]
+      },
+      {
+        "id": "qb-065",
+        "split": "dev",
+        "query": "Who negotiates visa abolition agreements for Hong Kong?",
+        "primary": 155,
+        "got": [
+          13,
+          151,
+          111,
+          39
+        ]
+      },
+      {
+        "id": "qb-066",
+        "split": "dev",
+        "query": "Can Hong Kong courts interpret the Basic Law themselves?",
+        "primary": 158,
+        "got": [
+          11,
+          17,
+          19,
+          2,
+          12
+        ]
+      },
+      {
+        "id": "qb-067",
+        "split": "test",
+        "query": "Can an amendment contradict China's basic policies regarding Hong Kong?",
+        "primary": 159,
+        "got": [
+          11,
+          17,
+          18,
+          23
+        ]
+      },
+      {
+        "id": "qb-068",
+        "split": "dev",
+        "query": "Does the common law still apply in Hong Kong?",
+        "primary": 8,
+        "got": [
+          25,
+          11,
+          17,
+          18
+        ]
+      },
+      {
+        "id": "qb-069",
+        "split": "test",
+        "query": "What is Annex III of the Basic Law?",
+        "primary": 18,
+        "got": [
+          159,
+          158,
+          2,
+          12,
+          16
+        ]
+      },
+      {
+        "id": "qb-070",
+        "split": "dev",
+        "query": "Do mainland offices in Hong Kong have to follow Hong Kong law?",
+        "primary": 22,
+        "got": [
+          18,
+          42,
+          23
+        ]
+      },
+      {
+        "id": "qb-070",
+        "split": "test",
+        "query": "Do people from other parts of China need approval to enter Hong Kong?",
+        "primary": 22,
+        "got": [
+          21,
+          42,
+          41
+        ]
+      },
+      {
+        "id": "qb-071",
+        "split": "dev",
+        "query": "What does Article 23 require?",
+        "primary": 23,
+        "got": [
+          159,
+          8,
+          160,
+          18,
+          158
+        ]
+      },
+      {
+        "id": "qb-073",
+        "split": "dev",
+        "query": "Does socialism apply in Hong Kong?",
+        "primary": 5,
+        "got": [
+          147,
+          108,
+          21
+        ]
+      },
+      {
+        "id": "qb-074",
+        "split": "test",
+        "query": "Who maintains public order in Hong Kong?",
+        "primary": 14,
+        "got": [
+          13,
+          151,
+          18,
+          125,
+          126
+        ]
+      },
+      {
+        "id": "qb-078",
+        "split": "test",
+        "query": "Is Hong Kong directly under the Central People's Government?",
+        "primary": 2,
+        "got": [
+          106,
+          21,
+          107
+        ]
+      },
+      {
+        "id": "qb-079",
+        "split": "test",
+        "query": "What is a certificate from the Chief Executive on acts of state?",
+        "primary": 19,
+        "got": [
+          47,
+          54,
+          55,
+          56,
+          45
+        ]
+      }
+    ],
+    "hybrid RRF (bank ×2 + FTS + dense)": [
+      {
+        "id": "qb-004",
+        "split": "test",
+        "query": "Is discrimination in the application of law prohibited?",
+        "primary": 25,
+        "got": [
+          29,
+          28,
+          37,
+          23,
+          39
+        ]
+      },
+      {
+        "id": "qb-011",
+        "split": "test",
+        "query": "Can residents move to another country freely?",
+        "primary": 31,
+        "got": [
+          24,
+          28,
+          41,
+          67,
+          61
+        ]
+      },
+      {
+        "id": "qb-015",
+        "split": "test",
+        "query": "Can I sue the government or its officials?",
+        "primary": 35,
+        "got": [
+          9,
+          48,
+          73,
+          64,
+          105
+        ]
+      },
+      {
+        "id": "qb-018",
+        "split": "dev",
+        "query": "Does the ICCPR still apply after 1997?",
+        "primary": 39,
+        "got": [
+          18,
+          121,
+          8,
+          160,
+          120
+        ]
+      },
+      {
+        "id": "qb-021",
+        "split": "test",
+        "query": "What duties do residents have?",
+        "primary": 42,
+        "got": [
+          99,
+          41,
+          24,
+          79,
+          21
+        ]
+      },
+      {
+        "id": "qb-030",
+        "split": "test",
+        "query": "Does the Chief Executive have to follow ExCo's advice?",
+        "primary": 54,
+        "got": [
+          47,
+          45,
+          53,
+          56,
+          50
+        ]
+      },
+      {
+        "id": "qb-042",
+        "split": "test",
+        "query": "Are the old procedural rights in criminal cases kept?",
+        "primary": 87,
+        "got": [
+          35,
+          24,
+          86,
+          39,
+          63
+        ]
+      },
+      {
+        "id": "qb-058",
+        "split": "test",
+        "query": "Can foreign warships enter Hong Kong ports freely?",
+        "primary": 125,
+        "got": [
+          114,
+          101,
+          126,
+          112,
+          67
+        ]
+      },
+      {
+        "id": "qb-060",
+        "split": "dev",
+        "query": "Can universities keep their autonomy and academic freedom?",
+        "primary": 136,
+        "got": [
+          32,
+          137,
+          34,
+          2,
+          31
+        ]
+      },
+      {
+        "id": "qb-063",
+        "split": "test",
+        "query": "Can Hong Kong stay in international organisations China is not a member of?",
+        "primary": 153,
+        "got": [
+          152,
+          39,
+          67,
+          21,
+          61
+        ]
+      },
+      {
+        "id": "qb-073",
+        "split": "dev",
+        "query": "Does socialism apply in Hong Kong?",
+        "primary": 5,
+        "got": [
+          145,
+          36,
+          39,
+          147,
+          144
+        ]
+      },
+      {
+        "id": "qb-078",
+        "split": "test",
+        "query": "Is Hong Kong directly under the Central People's Government?",
+        "primary": 2,
+        "got": [
+          22,
+          106,
+          14,
+          13,
+          21
         ]
       }
     ]

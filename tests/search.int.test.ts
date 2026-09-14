@@ -29,3 +29,28 @@ describe.skipIf(!hasDb)("search over the seeded corpus", () => {
     expect(hits[0]?.articles).toContain(114);
   });
 });
+
+/* Dense + hybrid retrieval. Skipped when the corpus has not been embedded (`npm run embed`). */
+describe.skipIf(!hasDb)("hybrid retrieval", () => {
+  it("finds the article whose wording shares no term with the question", async () => {
+    const { searchArticles, searchArticlesDense, searchArticlesHybrid } = await import("@/lib/law");
+    const q = "Do I pay customs duty on goods I bring into Hong Kong?";
+    // The article says "free port" and "tariff", never "customs duty": strict full-text search returns nothing.
+    expect((await searchArticles(q, 5)).length).toBe(0);
+    const dense = await searchArticlesDense(q, 5);
+    if (dense.length === 0) return; // corpus not embedded in this environment
+    const hybrid = await searchArticlesHybrid(q, 5);
+    expect(hybrid.map((h) => h.number)).toContain(114);
+  });
+
+  it("reports which retrieval paths found each hit", async () => {
+    const { searchArticlesDense, searchArticlesHybrid } = await import("@/lib/law");
+    const q = "Are foreigners bound by Hong Kong laws?";
+    if ((await searchArticlesDense(q, 1)).length === 0) return;
+    const hits = await searchArticlesHybrid(q, 5);
+    expect(hits.map((h) => h.number)).toContain(42);
+    const sources = new Set(hits.flatMap((h) => h.sources ?? []));
+    expect(sources.size).toBeGreaterThan(0);
+    for (const s of sources) expect(["question bank", "full-text", "semantic"]).toContain(s);
+  });
+});

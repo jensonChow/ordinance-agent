@@ -15,13 +15,15 @@
     "corpus:build": "python3 scripts/parse_basic_law.py",
     "eval:retrieval": "tsx scripts/eval-retrieval.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "embed": "tsx scripts/embed-corpus.ts"
   },
   "dependencies": {
     "@ai-sdk/azure": "^4.0.68",
     "@ai-sdk/mcp": "^2.0.48",
     "@ai-sdk/openai-compatible": "^3.0.47",
     "@ai-sdk/react": "^4.0.100",
+    "@huggingface/transformers": "^4.2.0",
     "@modelcontextprotocol/server": "^2.0.0",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",

@@ -46,6 +46,19 @@ export type MessageCitations = {
 
 const inRange = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n) && n >= 1 && n <= 160;
 
+/** Human-readable retrieval paths for one search hit. Hybrid hits carry `found_by`; older shapes carry `match`. */
+function searchLabels(hit: { match?: string; found_by?: string[] }): string[] {
+  const NAMES: Record<string, string> = {
+    "question bank": "the question bank",
+    "full-text": "full-text search",
+    semantic: "semantic search",
+  };
+  if (hit.found_by?.length) return hit.found_by.map((s) => NAMES[s] ?? s);
+  if (hit.match === "strict" || hit.match === "loose") return [`full-text search (${hit.match})`];
+  if (hit.match === "dense") return ["semantic search"];
+  return ["full-text search"];
+}
+
 /** Derive citation chips, retrieval provenance and trace counts for one assistant message, purely from its UI parts. */
 export function messageCitations(message: UIMessage): MessageCitations {
   const provenance: Record<number, ArticleProvenance> = {};
@@ -77,7 +90,7 @@ export function messageCitations(message: UIMessage): MessageCitations {
       | {
           article?: number;
           articles?: { article?: number }[];
-          hits?: { article?: number; match?: string }[];
+          hits?: { article?: number; match?: string; found_by?: string[] }[];
           questions?: { id?: string; articles?: number[] }[];
         }
       | undefined;
@@ -91,7 +104,7 @@ export function messageCitations(message: UIMessage): MessageCitations {
     if (name === "search_articles") {
       for (const h of out.hits ?? []) {
         if (!inRange(h?.article)) continue;
-        addFound(h.article!, h.match ? `full-text search (${h.match})` : "full-text search");
+        for (const label of searchLabels(h)) addFound(h.article!, label);
       }
       continue;
     }

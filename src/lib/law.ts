@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { embedOne, EMBEDDING_DIMS } from "@/lib/embeddings";
 import { stripDomainStopwords } from "@/lib/text";
 export { formatCitation, stripDomainStopwords } from "@/lib/text";
 import { Prisma } from "@/generated/prisma/client";
@@ -9,9 +10,17 @@ export type ArticleHit = {
   chapterTitle: string;
   rank: number;
   snippet: string;
-  /** "strict" = every query term matched (websearch syntax); "loose" = any term matched, ranked by density. */
-  mode: "strict" | "loose";
+  /**
+   * How the hit was found: "strict" = every query term matched (websearch syntax); "loose" = any term matched,
+   * ranked by density; "dense" = nearest neighbour by sentence embedding; "hybrid" = fused from several lists.
+   */
+  mode: "strict" | "loose" | "dense" | "hybrid";
+  /** For hybrid hits: which retrieval paths returned this article, in a fixed order. */
+  sources?: RetrievalSource[];
 };
+
+/** The retrieval paths the hybrid search fuses; surfaced per hit so an answer's citations stay auditable. */
+export type RetrievalSource = "question bank" | "full-text" | "semantic";
 
 const HEADLINE = "MaxFragments=2, MinWords=10, MaxWords=28, StartSel=**, StopSel=**";
 
@@ -66,6 +75,115 @@ export async function searchArticlesSmart(query: string, limit = 5): Promise<Art
   const seen = new Set(strict.map((h) => h.number));
   const loose = (await searchArticlesLoose(query, limit + strict.length)).filter((h) => !seen.has(h.number));
   return [...strict, ...loose].slice(0, limit);
+}
+
+/**
+ * Dense retrieval: nearest articles to the query by sentence embedding (dot product of L2-normalised vectors =
+ * cosine). Answers the failure lexical search cannot: "customs duty" against an article that says "tariff".
+ *
+ * Returns [] when the corpus has not been embedded (`npm run embed`) or the model is unavailable, so every
+ * caller degrades to lexical retrieval instead of erroring.
+ */
+export async function searchArticlesDense(query: string, limit = 5, precomputed?: number[] | null): Promise<ArticleHit[]> {
+  const vector = precomputed !== undefined ? precomputed : await embedOne(query);
+  if (!vector) return [];
+  const literal = `{${vector.join(",")}}`;
+  const rows = await prisma.$queryRaw<Omit<ArticleHit, "mode">[]>(Prisma.sql`
+    SELECT a."number",
+           a."chapterNumber",
+           c."title" AS "chapterTitle",
+           (SELECT sum(x * y) FROM unnest(a."embedding", ${literal}::float8[]) AS t(x, y))::float8 AS "rank",
+           left(a."text", 240) AS "snippet"
+    FROM "Article" a
+    JOIN "Chapter" c ON c."number" = a."chapterNumber"
+    WHERE cardinality(a."embedding") = ${EMBEDDING_DIMS}
+    ORDER BY "rank" DESC, a."number" ASC
+    LIMIT ${limit}
+  `);
+  return rows.map((r) => ({ ...r, mode: "dense" as const }));
+}
+
+/** The same nearest-neighbour lookup over the study question bank (canonical questions only). */
+export async function searchQuestionsDense(query: string, limit = 3, precomputed?: number[] | null): Promise<QuestionHit[]> {
+  const vector = precomputed !== undefined ? precomputed : await embedOne(query);
+  if (!vector) return [];
+  const literal = `{${vector.join(",")}}`;
+  return prisma.$queryRaw<QuestionHit[]>(Prisma.sql`
+    SELECT q."id", q."text", q."articles", q."tags",
+           (SELECT sum(x * y) FROM unnest(q."embedding", ${literal}::float8[]) AS t(x, y))::float8 AS "rank"
+    FROM "Question" q
+    WHERE cardinality(q."embedding") = ${EMBEDDING_DIMS}
+    ORDER BY "rank" DESC, q."id" ASC
+    LIMIT ${limit}
+  `);
+}
+
+/** Reciprocal rank fusion: an article's score is the sum of 1/(K + its rank) over the lists that returned it. */
+const RRF_K = 60;
+function fuse(lists: { source: RetrievalSource; articles: number[] }[], limit: number) {
+  const score = new Map<number, number>();
+  const sources = new Map<number, Set<RetrievalSource>>();
+  for (const { source, articles } of lists) {
+    articles.forEach((n, i) => {
+      score.set(n, (score.get(n) ?? 0) + 1 / (RRF_K + i + 1));
+      (sources.get(n) ?? sources.set(n, new Set()).get(n)!).add(source);
+    });
+  }
+  const ORDER: RetrievalSource[] = ["question bank", "full-text", "semantic"];
+  return [...score.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0] - b[0])
+    .slice(0, limit)
+    .map(([n]) => ({ number: n, sources: ORDER.filter((s) => sources.get(n)!.has(s)) }));
+}
+
+/**
+ * The retrieval the agent actually uses: the question bank (lexical and dense), full-text search and dense
+ * article search, fused by reciprocal rank. Each component degrades to [] on its own, so the fusion still works
+ * when the embedding model is missing — it is then exactly the previous bank + full-text behaviour.
+ */
+export async function searchArticlesHybrid(query: string, limit = 5): Promise<ArticleHit[]> {
+  const vector = await embedOne(query); // embed once; both dense lookups reuse it
+  const [bankLexical, bankDense, fts, dense] = await Promise.all([
+    searchQuestions(query, 3),
+    searchQuestionsDense(query, 3, vector),
+    searchArticlesSmart(query, limit),
+    searchArticlesDense(query, limit, vector),
+  ]);
+  const ranked = fuse(
+    [
+      { source: "question bank", articles: [...new Set(bankLexical.flatMap((h) => h.articles))] },
+      { source: "question bank", articles: [...new Set(bankDense.flatMap((h) => h.articles))] },
+      { source: "full-text", articles: fts.map((h) => h.number) },
+      { source: "semantic", articles: dense.map((h) => h.number) },
+    ],
+    limit,
+  );
+  const order = ranked.map((r) => r.number);
+  const sourcesByArticle = new Map(ranked.map((r) => [r.number, r.sources]));
+  // Reuse the richest description we already have for each article (a full-text snippet beats a leading slice).
+  const known = new Map<number, ArticleHit>();
+  for (const h of [...dense, ...fts]) known.set(h.number, h);
+  const missing = order.filter((n) => !known.has(n));
+  if (missing.length) {
+    const rows = await prisma.article.findMany({
+      where: { number: { in: missing } },
+      select: { number: true, chapterNumber: true, text: true, chapter: { select: { title: true } } },
+    });
+    for (const r of rows) {
+      known.set(r.number, {
+        number: r.number,
+        chapterNumber: r.chapterNumber,
+        chapterTitle: r.chapter.title,
+        rank: 0,
+        snippet: r.text.slice(0, 240),
+        mode: "hybrid",
+      });
+    }
+  }
+  return order.flatMap((n) => {
+    const hit = known.get(n);
+    return hit ? [{ ...hit, mode: "hybrid" as const, sources: sourcesByArticle.get(n) ?? [] }] : [];
+  });
 }
 
 export type QuestionHit = { id: string; text: string; articles: number[]; tags: string[]; rank: number };

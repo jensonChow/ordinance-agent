@@ -53,7 +53,12 @@ describe("messageCitations", () => {
           toolCallId: "s1",
           state: "output-available",
           input: { query: "customs duty" },
-          output: mcpOutput({ hits: [{ article: 114, match: "loose" }, { article: 89, match: "loose" }] }),
+          output: mcpOutput({
+            hits: [
+              { article: 114, match: "hybrid", found_by: ["question bank", "semantic"] },
+              { article: 89, match: "hybrid", found_by: ["full-text"] },
+            ],
+          }),
         },
         {
           type: "dynamic-tool",
@@ -70,10 +75,10 @@ describe("messageCitations", () => {
     expect(c.provenance[114]).toEqual({
       read: true,
       mentioned: true,
-      found: ["question bank (qb-055)", "full-text search (loose)"],
+      found: ["question bank (qb-055)", "the question bank", "semantic search"],
     });
     // surfaced by search but never read or named
-    expect(c.provenance[89]).toEqual({ read: false, mentioned: false, found: ["full-text search (loose)"] });
+    expect(c.provenance[89]).toEqual({ read: false, mentioned: false, found: ["full-text search"] });
     // named in the answer with no tool ever returning it
     expect(c.provenance[106]).toEqual({ read: false, mentioned: true, found: [] });
   });

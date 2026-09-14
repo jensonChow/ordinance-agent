@@ -64,9 +64,12 @@ const CHIP_STYLE: Record<CitationStatus, string> = {
 
 /** Short marker for the retrieval path that surfaced the article: question bank, full-text search, or nothing. */
 function pathMark(found: string[]): string | null {
-  if (found.some((f) => f.startsWith("question bank"))) return "qb";
-  if (found.some((f) => f.startsWith("full-text"))) return "fts";
-  return null;
+  const marks = [
+    found.some((f) => f.includes("question bank")) ? "qb" : null,
+    found.some((f) => f.startsWith("full-text")) ? "fts" : null,
+    found.some((f) => f.startsWith("semantic")) ? "vec" : null,
+  ].filter(Boolean);
+  return marks.length ? marks.join("·") : null;
 }
 
 function Chip({

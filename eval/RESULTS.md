@@ -1,6 +1,6 @@
 # Retrieval evaluation
 
-Date: 2026-09-12 · corpus: 160 articles · 80 study questions, each with two paraphrases: paraphrase 1 = **dev** (used to tune tags and stop-words), paraphrase 2 = **test** (never inspected while tuning). The canonical questions themselves are never used as queries.
+Date: 2026-09-14 · corpus: 160 articles · 80 study questions, each with two paraphrases: paraphrase 1 = **dev** (used to tune tags and stop-words), paraphrase 2 = **test** (never inspected while tuning). The canonical questions themselves are never used as queries.
 
 "primary" = the first article listed for the question is in the top-k; "any" = any listed article is.
 
@@ -13,6 +13,9 @@ Date: 2026-09-12 · corpus: 160 articles · 80 study questions, each with two pa
 | smart FTS (strict→loose) | 52.5% | 62.5% | 67.5% | 61.3% | 73.8% | 78.8% |
 | question bank | 55.0% | 68.8% | 72.5% | 55.0% | 68.8% | 72.5% |
 | question bank → smart FTS | 55.0% | 71.3% | 80.0% | 55.0% | 72.5% | 85.0% |
+| dense (articles) | 58.8% | 82.5% | 86.3% | 70.0% | 90.0% | 93.8% |
+| dense (question bank) | 56.3% | 68.8% | 73.8% | 56.3% | 68.8% | 73.8% |
+| hybrid RRF (bank ×2 + FTS + dense) | 63.7% | 82.5% | 88.8% | 73.8% | 87.5% | 92.5% |
 
 ## dev
 
@@ -23,6 +26,9 @@ Date: 2026-09-12 · corpus: 160 articles · 80 study questions, each with two pa
 | smart FTS (strict→loose) | 37.5% | 58.8% | 67.5% | 47.5% | 66.3% | 75.0% |
 | question bank | 63.7% | 85.0% | 87.5% | 63.7% | 85.0% | 87.5% |
 | question bank → smart FTS | 65.0% | 87.5% | 95.0% | 65.0% | 87.5% | 95.0% |
+| dense (articles) | 62.5% | 76.3% | 83.8% | 71.3% | 82.5% | 87.5% |
+| dense (question bank) | 55.0% | 73.8% | 77.5% | 55.0% | 73.8% | 78.8% |
+| hybrid RRF (bank ×2 + FTS + dense) | 78.8% | 92.5% | 96.3% | 86.3% | 96.3% | 97.5% |
 
 ## all
 
@@ -33,3 +39,6 @@ Date: 2026-09-12 · corpus: 160 articles · 80 study questions, each with two pa
 | smart FTS (strict→loose) | 45.0% | 60.6% | 67.5% | 54.4% | 70.0% | 76.9% |
 | question bank | 59.4% | 76.9% | 80.0% | 59.4% | 76.9% | 80.0% |
 | question bank → smart FTS | 60.0% | 79.4% | 87.5% | 60.0% | 80.0% | 90.0% |
+| dense (articles) | 60.6% | 79.4% | 85.0% | 70.6% | 86.3% | 90.6% |
+| dense (question bank) | 55.6% | 71.3% | 75.6% | 55.6% | 71.3% | 76.3% |
+| hybrid RRF (bank ×2 + FTS + dense) | 71.3% | 87.5% | 92.5% | 80.0% | 91.9% | 95.0% |
