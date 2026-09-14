@@ -6,6 +6,11 @@
 citation audit and ratings. No model key is configured there, so the assistant will not compose prose answers; it
 says so and shows what retrieval returned. See [Deploy](#deploy) for exactly what is and is not running.
 
+The interface is in Chinese — Hong Kong legal information is bilingual, and so are HKLII and CLIC — while article
+text is the Government's English booklet and is marked `lang="en"` wherever it appears. It is built from a design
+canvas kept in [`design/`](design/), whose README records the layout rules and the two places this implementation
+deliberately departs from the mock.
+
 A small, complete AI application for studying the **Basic Law of the Hong Kong SAR**: an agent that looks the text up
 through **MCP tools**, quotes and cites articles, and keeps the learner's notes and every tool call in **PostgreSQL**.
 

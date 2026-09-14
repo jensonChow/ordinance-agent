@@ -98,6 +98,29 @@ than from the job description alone; see the README section on what was borrowed
 | Live ratings | `POST /api/ratings` twice, then `/eval` | `200 {"ok":true}` both times; `/eval` then reports "2 judgements, mean 4.00 out of 5" with per-article breakdown. The whole loop — retrieve, cite, rate, aggregate — works against the hosted database |
 | Honesty check | `/eval` | The page carries a notice that this deployment runs with `DENSE_RETRIEVAL=off` and is therefore the 80.0% pipeline, not the 88.8% in the table it is showing. A benchmark page that describes something other than what is running would be worse than no page |
 
+## 2026-09-14 (fourth session) — the interface rebuilt from the design canvas
+
+Implements `design/Redesign.dc.html`. The canvas was read for its rules, not copied: its component script states the
+layout constraints (one rail at a time, per-mode panel names, a measured header height) that a screenshot does not.
+
+| Step | Command / action | Result |
+|---|---|---|
+| Import | Claude Design project *Ordinance Agent UI 改进* | `Redesign.dc.html` (142,068 chars decoded) fetched through the project's own API in an authenticated browser and saved to `design/`. `support.js` was not kept: its first line is `// GENERATED from dc-runtime/src/*.ts — do not edit`, i.e. the canvas host's runtime rather than part of the design |
+| Typecheck / lint / tests | `npx tsc --noEmit`, `npm run lint`, `npm test` | clean; 28 tests still pass — the rewrite is presentation only, no retrieval or persistence logic changed |
+| Build | `npm run build` | compiled; `/`, `/eval`, `/article/[number]` and all six API routes present |
+| Modes, in a browser | Chrome against `localhost:3100` | All five switch. 自測 draws a real question from the bank (`qb-012`), marks the pick against the article the bank lists, and turns the chosen row green with the verdict naming the id. 讀條文 opens the corpus tree on the left **and closes the evidence rail**, which is the one-rail rule working |
+| Panel renaming | switching modes | 證據 → 對照 → 掌握度 → 標籤 → 部署, matching the canvas |
+| The answer path | "Do I pay customs duty on goods I bring into Hong Kong?" | `find_questions → get_article`; 依據 row shows `art. 106 ⚠` in seal red and `art. 114 qb` in green, with the line "這個回答提到 1 條條文，但任何工具都沒有返回過它 —— 當作未經查證". The evidence rail lists five articles with their matched study questions and states, and lights only the `qb` lane — the lanes come from the search tool's `found_by`, not from a timer |
+| Rating | clicking 4 on art. 114 | highlighted and "已保存"; the row is keyed by message + article so a different citation remounts it |
+| Theme | toggle, then navigate to `/eval` and `/article/27` | both dark. The theme lives on `<html>` behind a pre-paint script in `layout.tsx`, so it survives navigation; `suppressHydrationWarning` on `<html>` covers the one attribute that differs by design |
+| One real defect found and fixed | dev overlay reported 1 issue | React hydration mismatch on `<html data-theme>`, caused by that pre-paint script. Fixed with `suppressHydrationWarning`; no console errors after |
+| Keyless end-to-end | `node scripts/smoke-chat.mjs` | `SMOKE OK` — the five-turn agent loop is untouched by the rewrite |
+| Live | push → Vercel auto-deploy | https://ordinance-agent.vercel.app serves the new interface; anonymous `curl` finds 基本法研讀, all five mode labels, the notice bar and the corpus tree |
+
+**Not done here.** Article text is still the Government's English booklet, marked `lang="en"` with the notice bar
+saying so; the canvas mocks Chinese article text, and supplying it for real would mean a multilingual embedding
+model and a re-run of every number in `eval/RESULTS.md`.
+
 ## Not verified
 
 - **Azure OpenAI**: the provider path (`@ai-sdk/azure`, `createAzure({ resourceName, apiKey })`, deployment as model id)
